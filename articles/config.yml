@@ -62,7 +62,7 @@ debug: null
 urnid: urn:uid:https://github.com/containerdaysjp/showks-book.git
 htmlext: html
 # CSSファイル(配列で複数指定可、yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること)
-stylesheet: ["styles/style.css"]
+stylesheet: ["style.css"]
 # ePUBのバージョン (2か3)
 epubversion: 3
 # HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
@@ -204,7 +204,7 @@ direction: "ltr"
 epubmaker:
   # HTMLファイルの拡張子
   htmlext: xhtml
-  stylesheet: ["styles/style.css","styles/epub_style.css"]
+  stylesheet: ["style.css","epub_style.css"]
   #
   # 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
   # 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
@@ -372,4 +372,4 @@ pdfmaker:
 # という構成にする必要がある(インデントさせる)
 #
 webmaker:
-    stylesheet: ["styles/style.css","styles/style-web.css"]
+    stylesheet: ["style.css","style-web.css"]
