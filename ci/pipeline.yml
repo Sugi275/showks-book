@@ -1,0 +1,68 @@
+---
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/containerdaysjp/showks-book.git 
+jobs:
+- name: unit-test
+  plan:
+  - get: repo
+    trigger: true
+  - task: create-pdf
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: vvakame/review
+          tag: 3.1
+      inputs:
+      - name: repo
+      outputs:
+      - name: output
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          REVISION=`cat .git/ref`
+          cd repo
+          ./setup.sh
+          npm run pdf
+          articles/showks-book.pdf ../output/showks-book-${REVISION}.pdf
+          npm run epub
+          articles/showks-book.epub ../output/showks-book-${REVISION}.epub
+  - task: upload-books
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: containerdaysjp/cloud-sdk-helm 
+          tag: 3.1
+      inputs:
+      - name: repo
+      outputs:
+      - name: output
+      params:
+        SERVICE_ACCOUNT: ((service_account))
+        PROJECT_NAME: ((project_name))
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+
+          REVISION=`cat .git/ref`
+          echo $SERVICE_ACCOUNT > credential.json
+          gcloud auth activate-service-account --key-file=credential.json
+          gcloud config set project $PROJECT_NAME 
+          
+          gsutil cp output/*.pdf gs://showks-book-bucket/showks-book-${REVISION}.pdf
+          gsutil cp output/*.epub gs://showks-book-bucket/showks-book-${REVISION}.epub
+          gsutil acl ch -u AllUsers:R gs://showks-book-bucket/showks-book-${REVISION}.pdf
+          gsutil acl ch -u AllUsers:R gs://showks-book-bucket/showks-book-${REVISION}.epub
+
