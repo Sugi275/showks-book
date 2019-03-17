@@ -9,4 +9,6 @@ articles/*.md
 articles/*.xml
 articles/*.txt
 
+
+.DS_Store
 ci/params.yml
