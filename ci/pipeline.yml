@@ -1,11 +1,18 @@
 ---
 resources:
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
 - name: repo
   type: git
+  webhook_token: ((webhook_token))
   source:
     uri: https://github.com/containerdaysjp/showks-book.git 
 jobs:
-- name: unit-test
+- name: build-and-upload
+  public: true
+  build_logs_to_retain: 10
   plan:
   - get: repo
     trigger: true
@@ -21,19 +28,21 @@ jobs:
       - name: repo
       outputs:
       - name: output
+      caches:
+      - path: repo/node_modules
       run:
         path: bash
         args:
         - -c
         - |
           set -e
-          REVISION=`cat .git/ref`
           cd repo
-          ./setup.sh
+          npm install --unsafe-perm
+          git submodule init && git submodule update
           npm run pdf
-          articles/showks-book.pdf ../output/showks-book-${REVISION}.pdf
+          mv articles/showks-book.pdf ../output/
           npm run epub
-          articles/showks-book.epub ../output/showks-book-${REVISION}.epub
+          mv articles/showks-book.epub ../output/
   - task: upload-books
     config:
       platform: linux
@@ -41,11 +50,11 @@ jobs:
         type: docker-image
         source:
           repository: containerdaysjp/cloud-sdk-helm 
-          tag: 3.1
       inputs:
       - name: repo
-      outputs:
       - name: output
+      outputs:
+      - name: messages
       params:
         SERVICE_ACCOUNT: ((service_account))
         PROJECT_NAME: ((project_name))
@@ -56,13 +65,42 @@ jobs:
         - |
           set -e
 
-          REVISION=`cat .git/ref`
+          REVISION=`cat repo/.git/ref`
           echo $SERVICE_ACCOUNT > credential.json
           gcloud auth activate-service-account --key-file=credential.json
           gcloud config set project $PROJECT_NAME 
           
-          gsutil cp output/*.pdf gs://showks-book-bucket/showks-book-${REVISION}.pdf
-          gsutil cp output/*.epub gs://showks-book-bucket/showks-book-${REVISION}.epub
+          gsutil cp output/showks-book.pdf gs://showks-book-bucket/showks-book-${REVISION}.pdf
+          gsutil cp output/showks-book.epub gs://showks-book-bucket/showks-book-${REVISION}.epub
           gsutil acl ch -u AllUsers:R gs://showks-book-bucket/showks-book-${REVISION}.pdf
           gsutil acl ch -u AllUsers:R gs://showks-book-bucket/showks-book-${REVISION}.epub
+          cat <<EOF >> messages/message
+          書籍のビルドが完了しました。
+          以下から内容の確認が可能です。
+          PDF: https://storage.googleapis.com/showks-book-bucket/showks-book-${REVISION}.pdf
+          ePub: https://storage.googleapis.com/showks-book-bucket/showks-book-${REVISION}.epub" 
+          EOF
+    on_success:
+      put: slack-alert
+      params:
+        channel: '#showks-book'
+        text_file: messages/message
+        text: |
+          $TEXT_FILE_CONTENT
 
+          http://concourse.udcp.info/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_failure:
+      put: slack-alert
+      params:
+        channel: '#showks-book'
+        text: |
+          BUILD FAILED
+          http://concourse.udcp.info/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+
+
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
