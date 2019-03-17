@@ -1,22 +1,26 @@
 
 = Chapter1
 
-ここからすべてが始まる！
+== showKsとは？
 
-showKsとは？
-“クラウドネイティブやるぞ”
-Cloud Natvieのショーケース作ろう
-参加型コンテンツ
-全てお持ち帰りできるぜ
-showKsの名前の由来
+ここにshowKsの説明
+
+
+showKsとは 
+== “クラウドネイティブやるぞ”
+== Cloud Natvieのショーケース作ろう
+== 参加型コンテンツ
+== 全てお持ち帰りできるぜ
+== showKsの名前の由来
 
 じゃあどうする？
 
-<解説>そもそもCloud nativeってなんだっけ
+==[column] <解説>そもそもCloud nativeってなんだっけ
 CNCFのDefinition
 
 Trail Map
 k8s
+===[/column]
 
 クラウドネイティブな開発を体験してもらおう
 何を見せたい？ ツールをきめよう
