@@ -78,7 +78,7 @@ jobs:
           書籍のビルドが完了しました。
           以下から内容の確認が可能です。
           PDF: https://storage.googleapis.com/showks-book-bucket/showks-${BRANCH}-${REVISION}.pdf
-          ePub: https://storage.googleapis.com/showks-book-bucket/showks-${BRANCH}-${REVISION}.epub" 
+          ePub: https://storage.googleapis.com/showks-book-bucket/showks-${BRANCH}-${REVISION}.epub 
           EOF
     on_success:
       put: slack-alert
