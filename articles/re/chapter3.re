@@ -1,13 +1,5 @@
-= Chapter3
+= ここがつらいよクラウドネイティブ
 
-== Terraform
+== 組織がスケールしない場合は細切れ
 
-== Concourse
-
-
-== Spinnaker
-
-=== GitOps
-=== カナリアリリース
-=== ingress-nginx
-
+== CI/CDを最初に組むまでは大変
