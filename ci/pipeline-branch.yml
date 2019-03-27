@@ -9,7 +9,7 @@ resources:
   webhook_token: ((webhook_token))
   source:
     uri: https://github.com/containerdaysjp/showks-book.git 
-    branch: jacopen
+    branch: ((branch))
 jobs:
 - name: build-and-upload
   public: true
@@ -59,13 +59,14 @@ jobs:
       params:
         SERVICE_ACCOUNT: ((service_account))
         PROJECT_NAME: ((project_name))
+        BRANCH: ((branch))
       run:
         path: bash
         args:
         - -c
         - |
-          set -e
-          BRANCH=jacopen
+          set 
+          BRANCH=${BRANCH}
           REVISION=`cat repo/.git/short_ref`
           echo $SERVICE_ACCOUNT > credential.json
           gcloud auth activate-service-account --key-file=credential.json
