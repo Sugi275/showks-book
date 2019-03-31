@@ -2,7 +2,7 @@
 
 == 当初の計画
 
-前章で説明した全体コンセプトが決定したのが9月末頃。12月頭のJKD本番まで、あと2ヶ月とすこしというタイミングでした。決して余裕のあるスケジュールではないものの、まだこの段階では楽観視していたのです。なぜなら、やるべき事が明確であり、仕組みもシンプルであるように思えたからです。 このとき、僕らの頭の中にあるイメージは図のようでした。
+前章で説明した全体コンセプトが決定したのが9月末頃。12月頭のJKD本番まで、あと2ヶ月とすこしというタイミングでした。決して余裕のあるスケジュールではないものの、まだこの段階では楽観視していたのです。なぜなら、やるべき事が明確であり、仕組みもシンプルであるように思えたからです。 このとき、僕らの頭の中にあるイメージは@<img>{at_first}のようでした。
 
 //image[at_first][当初の構想][scale=0.5]{
 //}
@@ -92,7 +92,49 @@ https://github.com/containerdaysjp/showks-spinnaker-pipelines
 
 == 申し込みフォームいるじゃん！どうしよう
 
+ここにきて大きな考慮漏れに気づいてしまいました。いや、あえて思考を後回しにしていたとも言えるのですが･･･ 参加型企画なのだから、@<b>{サインアップの仕組み}が必須なのです。何らしかの方法で、参加者から必要な情報を渡して貰う必要があります。
+
+今回、参加者にはGitHubを使ったPull Request開発を体験してもらいますので、GitHubアカウントは必須になります。また、キャンバスに掲載したい情報も渡して貰いたいですね。つまり、以下のような項目の入力が必要なわけです。
+
+ * ユーザー名(必須)
+ * GitHubアカウント名(必須)
+ * TwitterID(オプション)
+ * コメント(オプション)
+
+ 当初は、Google Formsを使ってさっくりと用意しようと考えていました。しかし、よくよく考えてみると以下のような制約があることに気づきます。
+
+ * ユーザー名はKubernetesのリソース名に使われるため、ユニークでなくてはならない
+ * KubernetesのServiceとしてもユーザー名が使われる。名前解決にも利用されるため、利用できる文字が限られる(例えばアンダースコアはNG)
+ * GitHubにもInvitationを送る必要があるため、ValidなGitHubアカウントでなくてはならない
+
+ つまり、ちゃんとしたバリデーションが必要ということになります。ここまでのバリデーションは、Google Formsでやるのは難しそうです。
+
+ 最終的に、このフォームはRuby on Railsで書くことになりました。ActiveRecordの持つバリデータによって、たった数行@<list>{project.rb}でバリデーションを行うことができました。
+
+//listnum[project.rb][バリデーション部分][ruby]{
+
+class Project < ApplicationRecord
+  include ActiveModel::Validations
+  validates_with GitHubUserValidator
+  validates :username, uniqueness: true, presence: true, format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
+  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 } #FIXME: need to check validation rule about github id
+  validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
+  validates :comment, length: { maximum: 100 }
+(略)
+
+//}
+
 === 爆誕　Pipeline as a Code
+
+申し込みフォームも目処がついたところで、いよいよユーザー申し込みからキャンバスの構築まで具体的なイメージが沸くようになってきました。
+
+一連の流れを図に起こしてみると以下のようになります。
+
+<図>
+
+ * GitHubのリポジトリ作成
+ * Concourse
+ * Spinnaker
 
 == 本番を想定するならば、少なくとも2面は環境必要だよね
 https://github.com/containerdaysjp/showks-manifests-prod
