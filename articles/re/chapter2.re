@@ -34,21 +34,87 @@
 === Kubernetes
 
 アプリケーションはすべてKubernetesの上で動かします。KubernetesはYAML形式で書かれた宣言的コード（マニフェスト）を用いて設定を行っていく仕組みのため、何もしなくても自動的にInfrastructure as Codeが実現できることになります。
+例えば、nginxのコンテナを3つ起動する場合は下記のようなマニフェスト記述し、Kubernetesに登録するだけでその状態に維持し続けてくれます。
+そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。
+
+//emlistnum[][yaml]{
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:1.12
+          ports:
+            - containerPort: 80
+//}
+
+Kubernetesの利用者はこの宣言的なマニフェストの書き方を学ぶだけで、あとはKubernetesが定義された状態に自動的に調整してくれる仕組みになっています。
+CI/CDの整備をする際にはこのマニフェストをどのように利用するかが肝心になってきます。
 
 === Helm
 
 Kubernetesのマニフェストを書いていくと、同じようなYAMLファイルをたくさん書く必要が出てきます。しかし、大量のマイクロサービスが作られる環境では共通する部分も多く、上手くテンプレート化することで記述量を削減することができます。
-
 マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 `helm install` コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
-
 しかし、今回はパッケージマネジメントの仕組みは使わず、純粋なテンプレートエンジンとして利用しています。
 
-(helmの図解やもうちょっと細かい説明をここに入れたい)
+例えば通常のWebアプリケーションを動作させる場合、コンテナを起動させるDeploymentリソースとServiceリソースを同時に作成することが多いかと思います。
+こういった際にはマイクロサービスごとに同じような大量のマニフェストを定義しなければならず、変更漏れなどの可能性も出てきてしまいます。
+Helmでは下記のようなテンプレートとValuesファイルをを利用することで、マニフェストのテンプレーティングを行うことが可能です。
 
-https://github.com/containerdaysjp/showks-canvas/tree/master/helm
+//listnum[Helmテンプレートの例][yaml]{
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-deployment
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+        - name: {{ .Values.appName }}-container
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: {{ .Values.port }}
+//}
+
+//listnum[valuesファイルの例][yaml]{
+appName: my-nginx
+replicas: 1
+image:
+  repository: nginx
+  tag: 1.12
+port: 80
+//}
+
+
+showKsでも、Helmを利用してマニフェストを生成することで再利用性やマニフェストの生成処理を管理しやすくしています。@<fn>{showks-canvas-helm}
+
+//footnote[showks-canvas-helm][https://github.com/containerdaysjp/showks-canvas/tree/master/helm]
 
 //image[iac][Infrastructure as Codeで環境をプロビジョニング][scale=0.5]{
 //}
+
+
+
+(helmの図解やもうちょっと細かい説明をここに入れたい)
+
 
 == CI/CD
 
