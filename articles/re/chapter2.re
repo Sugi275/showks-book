@@ -4,7 +4,7 @@
 
 前章で説明した全体コンセプトが決定したのが9月末頃。12月頭のJKD本番まで、あと2ヶ月とすこしというタイミングでした。決して余裕のあるスケジュールではないものの、まだこの段階では楽観視していたのです。なぜなら、やるべき事が明確であり、仕組みもシンプルであるように思えたからです。 このとき、僕らの頭の中にあるイメージは@<img>{at_first}のようでした。
 
-//image[at_first][当初の構想][scale=0.5]{
+//image[at_first][当初の構想][scale=0.6]{
 //}
 
 シンプル。実にシンプル。これなら1ヶ月もあれば実現できそうです。
@@ -29,7 +29,9 @@
 
 マネージドサービスはとても便利ですし、皆さん結構GUIを使ってポチポチ構築されているのではないでしょうか。でも、GUIを使うのは手数がかかりますし、再現性の点においてもあまり好ましくありません。そこで、これらをプロビジョニングする仕組みとして、HashiCorpのTerraformを利用しました。
 
-ファイルは(https://github.com/containerdaysjp/showks-terraform) からダウンロード可能です。
+ファイルはGitHub@<fn>{showks-terraform}からダウンロード可能です。
+
+//footnote[showks-terraform][https://github.com/containerdaysjp/showks-terraform]
 
 === Kubernetes
 
@@ -123,9 +125,11 @@ showKsでも、Helmを利用してマニフェストを生成することで再�
 今回はCIツールとしてConcourseCIを利用しました。
 ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こちらもコード化を行うことが可能です。
 
-https://github.com/containerdaysjp/showks-concourse-pipelines
+利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です
 
 (全体的に説明の追加要)
+
+//footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
 
 === （モテるから）Continuous Deliveryやりたいよね - Spinnaker
 
@@ -136,11 +140,13 @@ Spinnakerというツールはご存じでしょうか。触ったことはな�
 Spinnakerでは TODO からPipeline設定をYAMLで定義することが可能になったため、showKsではWebUIから登録するのではなく、YAMLから登録する形にしました。
 
 
-https://github.com/containerdaysjp/showks-spinnaker-pipelines
+SpinnakerのPipeline YAMLはGitHub@<fn>{spinnaker-pipelines}からダウンロード可能です
 
 (全体的に説明の追加要)
 
-//image[iac][CI/CDの実践][scale=0.5]{
+//footnote[spinnaker-pipelines][https://github.com/containerdaysjp/showks-spinnaker-pipelines]
+
+//image[iac][CI/CDの実践][scale=0.6]{
 //}
 
 == GitOps
@@ -153,7 +159,7 @@ GitOpsで登場するリポジトリは2種類存在します。一つはアプ�
 GitOpsではこのCIが行われた際に、マニフェスト用のリポジトリに対して更新を行います。より具体的にはマニフェストに記述された利用するコンテナイメージ（spec.containers[].image）のタグ（バージョン）を変更します。
 その後リポジトリのマニフェストが更新されたことを検知すると、実際にKubernetesクラスタに対して変更が加えられるようになります。
 
-//image[gitops][GitOpsの実践][scale=0.5]{
+//image[gitops][GitOpsの実践][scale=0.6]{
 //}
 
 GitOpsはあくまでも概念であり、マニフェストの更新や更新時のKubernetesクラスタへの適用といった実装は多岐に渡ります。
@@ -187,6 +193,32 @@ GitOpsを採用することにより、多くのメリットがあります。
 
 ===[/column]
 
+== ユーザー体験の設計
+
+ツール決めだけで無く、ユーザー体験の面も結構な時間を割いてディスカッションしました。今回のコンセプトのひとつが『クラウドネイティブな開発の体験』なんですから、そこをおざなりにすることは出来ません。 JKDの運営委員会の後にみんなで残って、やんややんやとディスカッションを行ったことを覚えています。
+
+//image[ux-discussion][ユーザー体験についてのディスカッション@インプレス][scale=0.6]{
+//}
+
+参加者は、アプリケーションの開発者になった気持ちになってもらい、コードを書いた後GitHubにpushしてもらいます。もちろん、イベント中に一からコードを書くのは難易度が高い話になってしまいますので、代わりの仕組みとしてJSONを編集すると、その情報がキャンバスに反映されるようにしました。
+
+ブランチ戦略としてはstagingとmasterを準備。本当の開発だとfeature-staging-masterと3段階くらいに分かれているケースが多いのではないかと思いますが、今回はイベント中の体験重視で2段構えのブランチとしました。
+
+stagingにpushされたコードは、Concourse CIでユニットテストが行われます。InvalidなJSONであったり、JSON以外の編集があった場合はテストがコケるようになっています。JSON以外のコードを受け付けないようにしているのは、悪意のあるコードをshowKs環境で動かされるのを防ぐためです。
+
+ユニットテストが通過したら、コンテナイメージのbuildとタグ付け、レジストリへのpushを行います。その後、KubernetesのマニフェストをHelmテンプレートから生成し、デプロイします。これでStaging環境で動作確認が行えるようになります。
+
+その後、開発が終わったとの想定でstagingからmasterブランチに対してPull Requestを投げて貰います。Concourse CIがそれを検知し、テストした後問題が無ければLGTMのコメント後、マージを行います。
+
+これでmasterブランチに変更が取り込まれましたので、その変更を再びConcourseが検知し、Stagingで作成したイメージへのタグ追加とマニフェスト生成を行います。最後にSpinnakerがデプロイを行って、Productionリリースが完了となります。フローを図にしたものが、@<img>{developer-experience}です。シンプルさを重要視した結果、GitHub Flow@<fn>{github-flow}と呼ばれるブランチ戦略とほぼ同じ仕組みになりました。
+
+//footnote[github-flow][http://scottchacon.com/2011/08/31/github-flow.html]
+
+//image[developer-experience][デベロッパーワークフロー][scale=0.8]{
+//}
+
+!!!! ブランチ分けでやるのか、リポジトリ分けでやるのかの話も書く
+
 == 本番を想定するならば、少なくとも2面は環境必要だよね
 
 ディスカッションしている間に、こんな話も出てきました。『パイプラインをProductionとStagingに分けて作ってるけどさあ、環境自体はどうする･･･?』
@@ -195,16 +227,12 @@ GitOpsを採用することにより、多くのメリットがあります。
 
 k8sクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
 
-//image[separate-env][ProductionとStagingの分離][scale=0.5]{
+//image[separate-env][ProductionとStagingの分離][scale=0.6]{
 //}
 
 
 //footnote[showks-manifests-prod][https://github.com/containerdaysjp/showks-manifests-prod]
 //footnote[showks-manifests-stg][https://github.com/containerdaysjp/showks-manifests-stg]
-
-
-
-!!!! ブランチ分けでやるのか、リポジトリ分けでやるのかの話も書く
 
 == 申し込みフォームいるじゃん！どうしよう
 
@@ -242,13 +270,13 @@ class Project < ApplicationRecord
 
 //footnote[showks-form][https://github.com/containerdaysjp/showks-form]
 
-=== 爆誕　Pipeline as Code
+=== 爆誕 Pipeline as Code
 
 申し込みフォームも目処がついたところで、いよいよユーザー申し込みからキャンバスの構築まで具体的なイメージが沸くようになってきました。
 
 ユーザーがフォームを入力後、一連の流れを図に起こしてみると@<img>{showks-form}のようになります。
 
-//image[showks-form][フォーム入力後の処理][scale=0.5]{
+//image[showks-form][フォーム入力後の処理][scale=0.6]{
 //}
 
 かなり沢山の処理があることが分かりますね。大きく分けると『GitHubの設定』『Concourseの設定』『Spinnakerの設定』の3つになります。
@@ -275,7 +303,7 @@ Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンド�
 
 これらの処理が、ユーザーの申し込みごとに行われることになります。1ユーザー申し込みごとに、GitHubのリポジトリが1つ、Concourseのパイプラインが3つ、Spinnakerのパイプラインが2つ出来上がります。もしamsy810, jacopen, jyoshiseの3ユーザーが申し込んだとすると、作成されるリソースは@<img>{provisioned-resources}のようになるわけですね。
 
-//image[provisioned-resources][作成されたリソース][scale=0.5]{
+//image[provisioned-resources][作成されたリソース][scale=0.6]{
 //}
 
 ===[column] Pipeline as Code
