@@ -187,6 +187,25 @@ GitOpsを採用することにより、多くのメリットがあります。
 
 ===[/column]
 
+== 本番を想定するならば、少なくとも2面は環境必要だよね
+
+ディスカッションしている間に、こんな話も出てきました。『パイプラインをProductionとStagingに分けて作ってるけどさあ、環境自体はどうする･･･?』
+
+確かに僕らは今までProduction,Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるk8sのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、k8sクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
+
+k8sクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
+
+//image[separate-env][ProductionとStagingの分離][scale=0.5]{
+//}
+
+
+//footnote[showks-manifests-prod][https://github.com/containerdaysjp/showks-manifests-prod]
+//footnote[showks-manifests-stg][https://github.com/containerdaysjp/showks-manifests-stg]
+
+
+
+!!!! ブランチ分けでやるのか、リポジトリ分けでやるのかの話も書く
+
 == 申し込みフォームいるじゃん！どうしよう
 
 ここにきて大きな考慮漏れに気づいてしまいました。いや、あえて思考を後回しにしていたとも言えるのですが･･･ 参加型企画なのだから、@<b>{サインアップの仕組み}が必須なのです。何らしかの方法で、参加者から必要な情報を渡して貰う必要があります。
@@ -198,48 +217,78 @@ GitOpsを採用することにより、多くのメリットがあります。
  * TwitterID (オプション)
  * コメント(オプション)
 
- 当初は、Google Formsを使ってさっくりと用意しようと考えていました。しかし、よくよく考えてみると以下のような制約があることに気づきます。
+当初は、Google Formsを使ってさっくりと用意しようと考えていました。しかし、よくよく考えてみると以下のような制約があることに気づきます。
 
  * ユーザー名はKubernetesのリソース名に使われるため、ユニークでなくてはならない
  * KubernetesのServiceとしてもユーザー名が使われる。名前解決にも利用されるため、利用できる文字が限られる(例えばアンダースコアはNG)
  * GitHubにもInvitationを送る必要があるため、ValidなGitHubアカウントでなくてはならない
 
- つまり、ちゃんとしたバリデーションが必要ということになります。ここまでのバリデーションは、Google Formsでやるのは難しそうです。
+つまり、ちゃんとしたバリデーションが必要ということになります。ここまでのバリデーションは、Google Formsでやるのは難しそうです。
 
- 最終的に、このフォームはRuby on Railsで書くことになりました。ActiveRecordの持つバリデータによって、たった数行@<list>{project.rb}でバリデーションを行うことができました。
+最終的に、このフォームはRuby on Railsで書くことになりました。showks-formという名前で、独立したアプリケーションとして動かすことにします@<fn>{showks-form}。
+
+RoRを採用したことで、ActiveRecordの持つ強力なバリデータによって、たった数行@<list>{project.rb}でバリデーションを行うことができました。
 
 //listnum[project.rb][バリデーション部分][ruby]{
-
 class Project < ApplicationRecord
   include ActiveModel::Validations
   validates_with GitHubUserValidator
   validates :username, uniqueness: true, presence: true, format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
-  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 } #FIXME: need to check validation rule about github id
+  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 }
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
 (略)
-
 //}
 
-=== 爆誕　Pipeline as a Code
+//footnote[showks-form][https://github.com/containerdaysjp/showks-form]
+
+=== 爆誕　Pipeline as Code
 
 申し込みフォームも目処がついたところで、いよいよユーザー申し込みからキャンバスの構築まで具体的なイメージが沸くようになってきました。
 
-一連の流れを図に起こしてみると以下のようになります。
+ユーザーがフォームを入力後、一連の流れを図に起こしてみると@<img>{showks-form}のようになります。
 
-<図>
+//image[showks-form][フォーム入力後の処理][scale=0.5]{
+//}
 
- * GitHubのリポジトリ作成
- * Concourse
- * Spinnaker
+かなり沢山の処理があることが分かりますね。大きく分けると『GitHubの設定』『Concourseの設定』『Spinnakerの設定』の3つになります。
 
-== 本番を想定するならば、少なくとも2面は環境必要だよね
-https://github.com/containerdaysjp/showks-manifests-prod
-https://github.com/containerdaysjp/showks-manifests-stg
+GitHubの操作は、GitHub APIを叩くGemであるOktokitを利用しました。リポジトリの作成だけでなく、WebhookやCollaborator、Protected Branchの設定まで全てこのGemで設定できたので、とても助かりました。
+
+//listnum[octokit][Oktokitを使ってGitHubにリポジトリを作成する例][ruby]{
+  def create_repository
+    @client = Octokit::Client.new(
+      login: Rails.application.credentials.github[:username],
+      password: Rails.application.credentials.github[:password])
+    if @client.repository?("containerdaysjp/#{repository_name}")
+      @repo = @client.repository("containerdaysjp/#{repository_name}")
+    else
+      @repo = @client.create_repository(
+        repository_name,
+        {organization: "containerdaysjp",
+        team_id: 3013077})
+    end
+(略)
+//}
+
+Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンドを、Railsから実行するという形の実装となっています。
+
+これらの処理が、ユーザーの申し込みごとに行われることになります。1ユーザー申し込みごとに、GitHubのリポジトリが1つ、Concourseのパイプラインが3つ、Spinnakerのパイプラインが2つ出来上がります。もしamsy810, jacopen, jyoshiseの3ユーザーが申し込んだとすると、作成されるリソースは@<img>{provisioned-resources}のようになるわけですね。
+
+//image[provisioned-resources][作成されたリソース][scale=0.5]{
+//}
+
+===[column] Pipeline as Code
+
+僕たちはこの仕組みのことを、Pipeline as Codeと呼ぶことにしました。showKsならではの仕組みで一般の開発に使える余地がどのくらいあるかは分かりませんが、たとえば組織内でリポジトリやCI/CDパイプラインを標準化して、プロジェクト開始時にこれらを一発でプロビジョニングする、といったことをしたい場合には有用な考え方かもしれません。
+
+===[/column]
+
+
 
 == カナリアリリース
 
-ingress-nginx ギリギリリリースされる
+<ここ執筆お願いしたいです @amsy810 or jyoshise>
 
 == マイクロサービスらしいアプリケーションとは
 
@@ -247,19 +296,31 @@ ingress-nginx ギリギリリリースされる
 
 マイクロサービスは、「サービス」という単位でビジネスロジックや各機能を疎結合な形で複数に分割し、それらを組み合わせることで大きなアプリケーションを作り上げる開発手法です。各サービスの独立性が求められるため、Dockerコンテナを使ってあげることで論理的な要素の分離と素早いサイクルでの更新に耐えうるシステムが構築できます。また、複数の別の機能を持つサービスが同時に走るような構成を作り上げる上で、Kubernetesという分散システムを使った基盤は非常にその特性と相性がよいとされており、「マイクロサービス」と「Kubernetes」はしばしば同じ文脈で用いられます。
 
-そもそも僕たちは「クラウドネイティブなインフラを作って、参加者の人に面白さを伝える」という話をきっかけにプロジェクトをスタートさせました。そのため、インフラの構想はどんどん膨らむ一方で、アプリケーションの中身やその設計についてはあまり深く考えられていませんでした（正確に言うと、アプリケーションの実装を実際に行う人が少なかったとも言えます）。あれこれ手を動かしながら試行錯誤を繰り返す中で、次第に以下のような形に収束していきました。
+プロジェクトをはじめたきっかけとして「クラウドネイティブなインフラを作って、参加者の人に面白さを伝える」という思いが僕たちにはありました。そのため、インフラの構想はどんどん膨らむ一方、アプリケーションの中身やその設計についてはあまり深く考えられていませんでした（正確に言うと、アプリケーションの実装を実際に行う人が少なかったとも言えます）。そして、あれこれ手を動かしながら試行錯誤を繰り返す中で、次第に以下のような形に収束していきました。
 
- * 参加者は1つの独立したサービスを持ち、それを自分で管理できる。
- * 各マイクロサービスは参加者のアクション（showKs form）を起点として動的に払い出される。
- * 各サービスは共通のエンドポイントを持ち、それをアグリゲーターによって集約して可観測な状態にする。
- * アグリゲーターはKubernetesのAPIを使って後ろにいる各サービスたちを常に監視していて、サービスが増えたり減ったりしたときにはそれがリアルタイムで更新される。
- * クライアントに提供されるアプリはアグリゲーターとだけ通信を行い、得られた結果をクライアントに伝える。
+ * 参加者は1つの独立したサービスを持ち、それを自分で管理できる
+ * 各マイクロサービスは参加者のアクション（showKs form）を起点として動的に払い出される
+ * 各サービスは共通のエンドポイントを持ち、それをアグリゲーターによって集約して可観測な状態にする
+ * アグリゲーターはKubernetesのAPIを使って後ろにいる各サービスたちを常に監視していて、サービスが増えたり減ったりしたときにはそれがリアルタイムで更新される
+ * クライアントに提供されるアプリはアグリゲーターとだけ通信を行い、得られた結果をクライアントに伝える
+
+こうして、ユーザーに提供するためのサービスである「canvas」、通信を集約する「aggregator」、そして、各サービスのステータスを可視化する「portal」の3つのアプリを作成することになりました。
 
 == 運用無くして何がクラウドネイティブだ。 モニタリングツールを考えよう
 
 == マイクロサービスの可視化
 
 == クラウドネイティブなアプリケーション開発
+
+マイクロサービスらしいアプリケーションとはのセクションでも少し言及しましたが、アプリケーションには大きく分けて以下の3つがありました。
+
+//table[showks-application-list][showKsプロジェクトで開発したアプリケーションとその役割]{
+名前            役割
+-------------------------------------------------------------
+Canvas         ユーザーに払い出される独立したマイクロサービスアプリケーション
+Aggregator     PortalにCanvasの状態を表示するためのAPI集約サーバー
+Portal         マイクロサービスアプリケーションの一覧画面
+//}
 
 https://github.com/containerdaysjp/showks-canvas
 
