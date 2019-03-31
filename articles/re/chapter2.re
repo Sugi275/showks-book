@@ -1,21 +1,16 @@
-= クラウドネイティブを実現する全体アーキテクチャ
+= クラウドネイティブのショーケースを作る
 
-== 全体アーキテクチャ
+== 当初の計画
 
-今回構築したshowKsのアプリケーションは、以下のようなアーキテクチャで構成されています。
+前章で説明した全体コンセプトが決定したのが9月末頃。12月頭のJKD本番まで、あと2ヶ月とすこしというタイミングでした。決して余裕のあるスケジュールではないものの、まだこの段階では楽観視していたのです。なぜなら、やるべき事が明確であり、仕組みもシンプルであるように思えたからです。 このとき、僕らの頭の中にあるイメージは図のようでした。
 
-//indepimage[01/pre7][フォーム][scale=0.5]
-
-== 甘すぎた見積もり
-
-そんなわけで始まったshowKsの開発。
-
-いくらクラウドネイティブだ、マイクロサービスだと言っても、所詮はショーケース。商用サービスでもないので、構成は極めてシンプルなものでいいだろう。そう思っていました。 実際、最初に描いた全体図はこんなイメージだったのです。
-
-//image[nyancat][nyancat]{
+//image[at_first][当初の構想][scale=0.5]{
 //}
 
-プロジェクトスタート遅くなったけど、これなら実現できそうだよねと。 でも、僕らのそんな淡い期待は早々に打ち砕かれることになるのです。なぜなら、実際に作り始めると、あれもこれも必要だと言うことが分かってきたのです。それでは、どういうツールをどういう考えで使ったのか、紹介していきます。
+シンプル。実にシンプル。これなら1ヶ月もあれば実現できそうです。
+
+でも、僕らのそんな淡い期待は早々に打ち砕かれることになるのです。なぜなら、実際に作り始めると、あれもこれも必要だと言うことが分かってきたのです。それでは、どういうツールをどういう考えで使ったのか、紹介していきます。
+
 
 == 持ち帰りを実現するキーワード 『Infrastructure as Code』
 
@@ -52,6 +47,11 @@ Kubernetesのマニフェストを書いていくと、同じようなYAMLファ
 
 https://github.com/containerdaysjp/showks-canvas/tree/master/helm
 
+//image[iac][Infrastructure as Codeで環境をプロビジョニング][scale=0.5]{
+//}
+
+== CI/CD
+
 === Concourse
 
 今回はCIツールとしてConcourseCIを利用しました。
@@ -59,22 +59,19 @@ ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こ
 
 https://github.com/containerdaysjp/showks-concourse-pipelines
 
-=== Spinnaker
-
-また、CDツールにはSpinnakerを利用しました。
-Spinnakerでは TODO からPipeline設定をYAMLで定義することが可能になったため、showKsではWebUIから登録するのではなく、YAMLから登録する形にしました。
-
-https://github.com/containerdaysjp/showks-spinnaker-pipelines
-
-== ユーザーに見せるだけではなく、何らかの形で参加して欲しいアプリ
-
-== （モテるから）Continuous Deliveryやりたいよね
+=== （モテるから）Continuous Deliveryやりたいよね - Spinnaker
 
 Spinnakerというツールはご存じでしょうか。触ったことはないけど、名前だけは知っているという方も多いのでは無いでしょうか？
 
-よくCI/CDという形でひとまとめに語られますが、Continuous IntegrationとContinuous Deliveryは異なるものであり、それぞれに適したツールが存在します。Spinnakerは、Continuous Deliveryに特化したツールです。CIツールでデリバリーまでやってしまうことも可能なのですが、やはりショーケースとしてこの人気ツールを外すことはできないでしょう。 というわけで、ツールがひとつ増えました。
+よくCI/CDという形でひとまとめに語られますが、Continuous IntegrationとContinuous Deliveryは異なるものであり、それぞれに適したツールが存在します。Spinnakerは、Continuous Deliveryに特化したツールです。CIツールでデリバリーまでやってしまうことも可能なのですが、やはりショーケースとしてこの人気ツールを外すことはできないでしょう。というわけで、ツールがひとつ増えました。
 
-<図>
+Spinnakerでは TODO からPipeline設定をYAMLで定義することが可能になったため、showKsではWebUIから登録するのではなく、YAMLから登録する形にしました。
+
+
+https://github.com/containerdaysjp/showks-spinnaker-pipelines
+
+//image[iac][CI/CDの実践][scale=0.5]{
+//}
 
 == GitOps
 
