@@ -29,7 +29,9 @@
 
 マネージドサービスはとても便利ですし、皆さん結構GUIを使ってポチポチ構築されているのではないでしょうか。でも、GUIを使うのは手数がかかりますし、再現性の点においてもあまり好ましくありません。そこで、これらをプロビジョニングする仕組みとして、HashiCorpのTerraformを利用しました。
 
-ファイルは(https://github.com/containerdaysjp/showks-terraform) からダウンロード可能です。
+ファイルはGitHub@<fn>{showks-terraform}からダウンロード可能です。
+
+//footnote[showks-terraform][https://github.com/containerdaysjp/showks-terraform]
 
 === Kubernetes
 
@@ -123,9 +125,11 @@ showKsでも、Helmを利用してマニフェストを生成することで再�
 今回はCIツールとしてConcourseCIを利用しました。
 ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こちらもコード化を行うことが可能です。
 
-https://github.com/containerdaysjp/showks-concourse-pipelines
+利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です
 
 (全体的に説明の追加要)
+
+//footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
 
 === （モテるから）Continuous Deliveryやりたいよね - Spinnaker
 
@@ -136,9 +140,11 @@ Spinnakerというツールはご存じでしょうか。触ったことはな�
 Spinnakerでは TODO からPipeline設定をYAMLで定義することが可能になったため、showKsではWebUIから登録するのではなく、YAMLから登録する形にしました。
 
 
-https://github.com/containerdaysjp/showks-spinnaker-pipelines
+SpinnakerのPipeline YAMLはGitHub@<fn>{spinnaker-pipelines}からダウンロード可能です
 
 (全体的に説明の追加要)
+
+//footnote[spinnaker-pipelines][https://github.com/containerdaysjp/showks-spinnaker-pipelines]
 
 //image[iac][CI/CDの実践][scale=0.6]{
 //}
@@ -264,7 +270,7 @@ class Project < ApplicationRecord
 
 //footnote[showks-form][https://github.com/containerdaysjp/showks-form]
 
-=== 爆誕　Pipeline as Code
+=== 爆誕 Pipeline as Code
 
 申し込みフォームも目処がついたところで、いよいよユーザー申し込みからキャンバスの構築まで具体的なイメージが沸くようになってきました。
 

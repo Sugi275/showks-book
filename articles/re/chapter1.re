@@ -16,7 +16,7 @@ JKD v18.12が開催されたのは12月ですが、実行委員会が組織さ�
 
 そうして開催された6月某日の実行委員会。そこで、JKDのオーガナイザーである鈴木さん(@szkn27) から『JKDの主催者側で何か企画をやってみないか』という話が持ちかけられました。 クラウドやコンテナ技術で名が知られている人も運営メンバーとして多く参加しているJKD。そのメンバーで何か企画をやれる、しかもかかる費用は主催者持ち。 こんな楽しいことやれそうなチャンス、なかなかありません。 ということで、テンションの上がった我々は様々なアイディアを出してみました。
 
-その中でも最も有望そうだったのが、『クラウドネイティブ技術のショーケース』 という案でした。 この案は、ネットワーク技術のカンファレンス 『Interop Tokyo　(https://www.interop.jp/)』 で行われているプロジェクト、『ShowNet』の影響を強く受けています。Interopというイベント名は、相互運用性(Interoperability)から来ているのですが、そのイベント名を体現するかのごとく、最新の機器と最新の技法で、会場内のネットワークを組み上げるという企画がShowNetなのです。25年もの歴史を持つ企画なので、ご存じの方も多いかも知れませんね。 
+その中でも最も有望そうだったのが、『クラウドネイティブ技術のショーケース』 という案でした。 この案は、ネットワーク技術のカンファレンス 『Interop Tokyo@<fn>{interop}』 で行われているプロジェクト、『ShowNet』の影響を強く受けています。Interopというイベント名は、相互運用性(Interoperability)から来ているのですが、そのイベント名を体現するかのごとく、最新の機器と最新の技法で、会場内のネットワークを組み上げるという企画がShowNetなのです。25年もの歴史を持つ企画なので、ご存じの方も多いかも知れませんね。 
 
 現在、さまざまなクラウドベンダーがKubernetes(以下k8s)のマネジメントサービスを提供しています。オンプレにk8sを構築するソリューションも多く登場しています。 こういった各サービス・ソフトウェア間を跨がるソフトウェアを作り、相互運用性を確認するような企画はどうかと。
 
@@ -26,9 +26,11 @@ JKD v18.12が開催されたのは12月ですが、実行委員会が組織さ�
 
 本当はもう少しいろんなやり取りがあったのですが、おおよそこんなノリで名前が決まりました。こうして、クラウドネイティブのショーケース『showKs』企画がスタートしたのです。
 
+//footnote[interop][https://www.interop.jp/]
+
 ===[column] <解説>そもそもCloud Nativeってなんだっけ
 
-Cloud Nativeはバズワードとして語られているように見えて、実はLinux FoundationのサブプロジェクトのCloud Native Computing Foundation（CNCF）のTOCが定義を公開しています（https://github.com/cncf/toc/blob/master/DEFINITION.md）。
+Cloud Nativeはバズワードとして語られているように見えて、実はLinux FoundationのサブプロジェクトのCloud Native Computing Foundation（CNCF）のTOCが定義を公開しています@<fn>{cncf-toc}。
 
 この定義を簡潔に表現するとCloud Nativeな技術を利用することで、
 
@@ -41,8 +43,12 @@ Cloud Nativeはバズワードとして語られているように見えて、�
 といった特徴を持ったシステムをオープンなテクノロジーを利用してスケーラブルに実現できるようになります。
 このCloud Native自体はKubernetes・Docker・マイクロサービスなどが必須なわけではありません。
 しかし、こういった技術を利用することによりCloud Nativeを実現する近道となります。
-CloudからCloud Nativeへ移行するにあたっては、Trail Map（https://github.com/cncf/trailmap）についても参考にしてみてください。
+CloudからCloud Nativeへ移行するにあたっては、Trail Map@<fn>{trailmap}についても参考にしてみてください。
 なお、showKsでもこのTrail Mapにある「Containerization」「CI/CD」「Orchestration & Application Definition」「Observaility & Analysis」といった順に進んでいきCloud Nativeを実現していきました。
+
+//footnote[cncf-toc][https://github.com/cncf/toc/blob/master/DEFINITION.md]
+//footnote[trailmap][https://github.com/cncf/trailmap]
+
 
 ===[/column]
 
@@ -83,7 +89,7 @@ CloudからCloud Nativeへ移行するにあたっては、Trail Map（https://g
 
  * どうせなら、参加した人が足跡を残せるようなやつが良いんでは無いか？
  * 『みんなが参加してくれた結果、最終的にこんなんになりました！』と俯瞰して成果を見られるようなアプリに
- ** Redditの企画"Place"みたいなやつ(http://www.cbc-net.com/posts/2017/04/11/reddit-place/)
+ ** Redditの企画"Place"みたいなやつ@<fn>{place}
 
 このアイディアを叩き台として、@jyoshise, @kojiha, @tsukamanらにより寝られたアイディアが『お絵描きアプリ』でした。
 
@@ -94,6 +100,7 @@ CloudからCloud Nativeへ移行するにあたっては、Trail Map（https://g
 実装方法はいろいろありそうですが、参加者ごとのキャンバスとポータルをそれぞれ別のアプリとして稼働させ、連動するようにすればマイクロサービスアーキテクチャのように振る舞うことができそうです。 Kubernetesを利用するという方向性にもマッチしているんじゃないでしょうか。 
 
 //indepimage[01/discussion][ディスカッション風景。この時点でおおよそのアプリの方向性が決まっていた][scale=0.5]
+//footnote[place][http://www.cbc-net.com/posts/2017/04/11/reddit-place/]
 
 == コンセプトの決定
 
