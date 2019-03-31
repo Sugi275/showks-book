@@ -90,6 +90,25 @@ https://github.com/containerdaysjp/showks-spinnaker-pipelines
 
 ===[/column]
 
+== 本番を想定するならば、少なくとも2面は環境必要だよね
+
+ディスカッションしている間に、こんな話も出てきました。『パイプラインをProductionとStagingに分けて作ってるけどさあ、環境自体はどうする･･･?』
+
+確かに僕らは今までProduction,Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるk8sのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、k8sクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
+
+k8sクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
+
+//image[separate-env][ProductionとStagingの分離][scale=0.5]{
+//}
+
+
+//footnote[showks-manifests-prod][https://github.com/containerdaysjp/showks-manifests-prod]
+//footnote[showks-manifests-stg][https://github.com/containerdaysjp/showks-manifests-stg]
+
+
+
+!!!! ブランチ分けでやるのか、リポジトリ分けでやるのかの話も書く
+
 == 申し込みフォームいるじゃん！どうしよう
 
 ここにきて大きな考慮漏れに気づいてしまいました。いや、あえて思考を後回しにしていたとも言えるのですが･･･ 参加型企画なのだから、@<b>{サインアップの仕組み}が必須なのです。何らしかの方法で、参加者から必要な情報を渡して貰う必要があります。
@@ -109,18 +128,22 @@ https://github.com/containerdaysjp/showks-spinnaker-pipelines
 
 つまり、ちゃんとしたバリデーションが必要ということになります。ここまでのバリデーションは、Google Formsでやるのは難しそうです。
 
-最終的に、このフォームはRuby on Railsで書くことになりました。ActiveRecordの持つバリデータによって、たった数行@<list>{project.rb}でバリデーションを行うことができました。
+最終的に、このフォームはRuby on Railsで書くことになりました。showks-formという名前で、独立したアプリケーションとして動かすことにします@<fn>{showks-form}。
+
+RoRを採用したことで、ActiveRecordの持つ強力なバリデータによって、たった数行@<list>{project.rb}でバリデーションを行うことができました。
 
 //listnum[project.rb][バリデーション部分][ruby]{
 class Project < ApplicationRecord
   include ActiveModel::Validations
   validates_with GitHubUserValidator
   validates :username, uniqueness: true, presence: true, format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
-  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 } #FIXME: need to check validation rule about github id
+  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 } 
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
 (略)
 //}
+
+//footnote[showks-form][https://github.com/containerdaysjp/showks-form]
 
 === 爆誕　Pipeline as Code
 
@@ -164,13 +187,11 @@ Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンド�
 
 ===[/column]
 
-== 本番を想定するならば、少なくとも2面は環境必要だよね
-https://github.com/containerdaysjp/showks-manifests-prod
-https://github.com/containerdaysjp/showks-manifests-stg
+
 
 == カナリアリリース
 
-ingress-nginx ギリギリリリースされる
+<ここ執筆お願いしたいです @amsy810 or jyoshise>
 
 == マイクロサービスらしいアプリケーションとは
 
