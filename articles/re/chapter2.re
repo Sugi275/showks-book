@@ -112,7 +112,6 @@ https://github.com/containerdaysjp/showks-spinnaker-pipelines
 最終的に、このフォームはRuby on Railsで書くことになりました。ActiveRecordの持つバリデータによって、たった数行@<list>{project.rb}でバリデーションを行うことができました。
 
 //listnum[project.rb][バリデーション部分][ruby]{
-
 class Project < ApplicationRecord
   include ActiveModel::Validations
   validates_with GitHubUserValidator
@@ -121,20 +120,49 @@ class Project < ApplicationRecord
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
 (略)
-
 //}
 
-=== 爆誕　Pipeline as a Code
+=== 爆誕　Pipeline as Code
 
 申し込みフォームも目処がついたところで、いよいよユーザー申し込みからキャンバスの構築まで具体的なイメージが沸くようになってきました。
 
-一連の流れを図に起こしてみると以下のようになります。
+ユーザーがフォームを入力後、一連の流れを図に起こしてみると@<img>{showks-form}のようになります。
 
-<図>
+//image[showks-form][フォーム入力後の処理][scale=0.5]{
+//}
 
- * GitHubのリポジトリ作成
- * Concourse
- * Spinnaker
+かなり沢山の処理があることが分かりますね。大きく分けると『GitHubの設定』『Concourseの設定』『Spinnakerの設定』の3つになります。
+
+GitHubの操作は、GitHub APIを叩くGemであるOktokitを利用しました。リポジトリの作成だけでなく、WebhookやCollaborator、Protected Branchの設定まで全てこのGemで設定できたので、とても助かりました。
+
+//listnum[octokit][Oktokitを使ってGitHubにリポジトリを作成する例][ruby]{
+  def create_repository
+    @client = Octokit::Client.new(
+      login: Rails.application.credentials.github[:username],
+      password: Rails.application.credentials.github[:password])
+    if @client.repository?("containerdaysjp/#{repository_name}")
+      @repo = @client.repository("containerdaysjp/#{repository_name}")
+    else
+      @repo = @client.create_repository(
+        repository_name,
+        {organization: "containerdaysjp",
+        team_id: 3013077})
+    end
+(略)
+//}
+
+Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンドを、Railsから実行するという形の実装となっています。
+
+これらの処理が、ユーザーの申し込みごとに行われることになります。1ユーザー申し込みごとに、GitHubのリポジトリが1つ、Concourseのパイプラインが3つ、Spinnakerのパイプラインが2つ出来上がります。もしamsy810, jacopen, jyoshiseの3ユーザーが申し込んだとすると、作成されるリソースは@<img>{provisioned-resources}のようになるわけですね。
+
+//image[provisioned-resources][作成されたリソース][scale=0.5]{
+//}
+
+===[column] Pipeline as Code
+
+僕たちはこの仕組みのことを、Pipeline as Codeと呼ぶことにしました。showKsならではの仕組みで一般の開発に使える余地がどのくらいあるかは分かりませんが、たとえば組織内でリポジトリやCI/CDパイプラインを標準化して、プロジェクト開始時にこれらを一発でプロビジョニングする、といったことをしたい場合には有用な考え方かもしれません。
+
+===[/column]
 
 == 本番を想定するならば、少なくとも2面は環境必要だよね
 https://github.com/containerdaysjp/showks-manifests-prod
