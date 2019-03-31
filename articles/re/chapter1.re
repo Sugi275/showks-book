@@ -33,6 +33,7 @@ JKD v18.12が開催されたのは12月ですが、実行委員会が組織さ�
 本当はもう少しいろんなやり取りがあったのですが、おおよそこんなノリで名前が決まりました。こうして、クラウドネイティブのショーケース『showKs』企画がスタートしたのです。
 
 ===[column] <解説>そもそもCloud Nativeってなんだっけ
+
 Cloud Nativeはバズワードとして語られているように見えて、実はLinux FoundationのサブプロジェクトのCloud Native Computing Foundation（CNCF）のTOCが定義を公開しています（https://github.com/cncf/toc/blob/master/DEFINITION.md）。
 
 この定義を簡潔に表現するとCloud Nativeな技術を利用することで、
@@ -48,6 +49,7 @@ Cloud Nativeはバズワードとして語られているように見えて、�
 しかし、こういった技術を利用することによりCloud Nativeを実現する近道となります。
 CloudからCloud Nativeへ移行するにあたっては、Trail Map（https://github.com/cncf/trailmap）についても参考にしてみてください。
 なお、showKsでもこのTrail Mapにある「Containerization」「CI/CD」「Orchestration & Application Definition」「Observaility & Analysis」といった順に進んでいきCloud Nativeを実現していきました。
+
 ===[/column]
 
 == いきなり暗礁に

@@ -59,6 +59,8 @@ ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こ
 
 https://github.com/containerdaysjp/showks-concourse-pipelines
 
+(全体的に説明の追加要)
+
 === （モテるから）Continuous Deliveryやりたいよね - Spinnaker
 
 Spinnakerというツールはご存じでしょうか。触ったことはないけど、名前だけは知っているという方も多いのでは無いでしょうか？
@@ -70,14 +72,27 @@ Spinnakerでは TODO からPipeline設定をYAMLで定義することが可能�
 
 https://github.com/containerdaysjp/showks-spinnaker-pipelines
 
+(全体的に説明の追加要)
+
 //image[iac][CI/CDの実践][scale=0.5]{
 //}
 
 == GitOps
 
+(GitOpsの説明記述お願いします)
+
+//image[gitops][GitOpsの実践][scale=0.5]{
+//}
+
+===[column] 膨らむ構成
+
+シンプルだなんて言ってたけど、だんだん雲行きが怪しくなってきましたね。この段階で、当初の計画よりも2倍くらい要素が増えてしまいました。アプリケーションだけならまだシンプルだと言えますが、それを上手く運用していくためのツールや手法がとにかく多い。 とはいえ、これらツールの支援無しにはクラウドネイティブな開発が出来ないのも事実。このあたりのツラミについては、第3章にて詳しく説明します。
+
+===[/column]
+
 == 申し込みフォームいるじゃん！どうしよう
 
-== 爆誕　Pipeline as a Code
+=== 爆誕　Pipeline as a Code
 
 == 本番を想定するならば、少なくとも2面は環境必要だよね
 https://github.com/containerdaysjp/showks-manifests-prod
