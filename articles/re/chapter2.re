@@ -33,22 +33,88 @@
 
 === Kubernetes
 
-アプリケーションはすべてKubernetesの上で動かします。KubernetesはYAML形式で書かれたマニフェストを用いて設定を行ってく仕組みのため、何もしなくても自動的にIaCが実現できることになります。
+アプリケーションはすべてKubernetesの上で動かします。KubernetesはYAML形式で書かれた宣言的コード（マニフェスト）を用いて設定を行っていく仕組みのため、何もしなくても自動的にInfrastructure as Codeが実現できることになります。
+例えば、nginxのコンテナを3つ起動する場合は下記のようなマニフェスト記述し、Kubernetesに登録するだけでその状態に維持し続けてくれます。
+そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。
+
+//emlistnum[][yaml]{
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:1.12
+          ports:
+            - containerPort: 80
+//}
+
+Kubernetesの利用者はこの宣言的なマニフェストの書き方を学ぶだけで、あとはKubernetesが定義された状態に自動的に調整してくれる仕組みになっています。
+CI/CDの整備をする際にはこのマニフェストをどのように利用するかが肝心になってきます。
 
 === Helm
 
 Kubernetesのマニフェストを書いていくと、同じようなYAMLファイルをたくさん書く必要が出てきます。しかし、大量のマイクロサービスが作られる環境では共通する部分も多く、上手くテンプレート化することで記述量を削減することができます。
-
 マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 `helm install` コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
-
 しかし、今回はパッケージマネジメントの仕組みは使わず、純粋なテンプレートエンジンとして利用しています。
 
-(helmの図解やもうちょっと細かい説明をここに入れたい)
+例えば通常のWebアプリケーションを動作させる場合、コンテナを起動させるDeploymentリソースとServiceリソースを同時に作成することが多いかと思います。
+こういった際にはマイクロサービスごとに同じような大量のマニフェストを定義しなければならず、変更漏れなどの可能性も出てきてしまいます。
+Helmでは下記のようなテンプレートとValuesファイルをを利用することで、マニフェストのテンプレーティングを行うことが可能です。
 
-https://github.com/containerdaysjp/showks-canvas/tree/master/helm
+//listnum[Helmテンプレートの例][yaml]{
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-deployment
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+        - name: {{ .Values.appName }}-container
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: {{ .Values.port }}
+//}
+
+//listnum[valuesファイルの例][yaml]{
+appName: my-nginx
+replicas: 1
+image:
+  repository: nginx
+  tag: 1.12
+port: 80
+//}
+
+
+showKsでも、Helmを利用してマニフェストを生成することで再利用性やマニフェストの生成処理を管理しやすくしています。@<fn>{showks-canvas-helm}
+
+//footnote[showks-canvas-helm][https://github.com/containerdaysjp/showks-canvas/tree/master/helm]
 
 //image[iac][Infrastructure as Codeで環境をプロビジョニング][scale=0.5]{
 //}
+
+
+
+(helmの図解やもうちょっと細かい説明をここに入れたい)
+
 
 == CI/CD
 
@@ -79,14 +145,45 @@ https://github.com/containerdaysjp/showks-spinnaker-pipelines
 
 == GitOps
 
-(GitOpsの説明記述お願いします)
+GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです（https://www.weave.works/technologies/gitops/）。
+GitOpsではContinious DeliveryをGitリポジトリを介して行うことにより、全ての変更はPull-Requestをベースに行われていきます。
+GitOpsで登場するリポジトリは2種類存在します。一つはアプリケーションのソースコード用のリポジトリ、もう一つはKubernetesのマニフェスト用のリポジトリです。
+流れとしては、まずアプリケーション開発者はアプリケーションのリポジトリに対してPull-Requestを作成後、UnitTest・コンテナイメージのビルドなどのContinuous Integrationが行われます。
+ここまでは従来のアプリケーション開発と何も変わりません。
+GitOpsではこのCIが行われた際に、マニフェスト用のリポジトリに対して更新を行います。より具体的にはマニフェストに記述された利用するコンテナイメージ（spec.containers[].image）のタグ（バージョン）を変更します。
+その後リポジトリのマニフェストが更新されたことを検知すると、実際にKubernetesクラスタに対して変更が加えられるようになります。
 
 //image[gitops][GitOpsの実践][scale=0.6]{
 //}
 
+GitOpsはあくまでも概念であり、マニフェストの更新や更新時のKubernetesクラスタへの適用といった実装は多岐に渡ります。
+GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}などがありますが、今回はHelmを利用したマニフェスト生成とSpinnakerを利用しています。
+
+//footnote[jenkinsx][https://github.com/jenkins-x]
+//footnote[flux][https://github.com/weaveworks/flux]
+
+GitOpsを採用することにより、多くのメリットがあります。
+1つはKubernetesのマニフェストをGitリポジトリに保管しておくことにより、Kubernetesの状態に関してSingle Source of Truthを実現することが可能です。
+システム全体の状態がマニフェストとしてGitリポジトリ上に管理されているため、障害時には再度宣言的に記述されたマニフェストを適用することにより迅速に回復させることが可能になります。
+また、Kubernetesへの変更は全てGitリポジトリを介して行われるという特性上、変更の監査履歴としても利用することが可能です。
+
+他にもアプリケーション開発者からみたときに、Kubernetesを意識する必要がほとんど無くなります。
+開発者はあくまでもアプリケーションのGitリポジトリに対して変更を加えればよく、そのあとのコンテナをKubernetesへデリバリするのは自動化されたGitOpsの役割になります。
+そのため、開発者の生産性を損ねることなく、コンテナの軽量さを生かして生産性やアプリケーションのリリース頻度を高めることが可能です。
+
+
 ===[column] 膨らむ構成
 
 シンプルだなんて言ってたけど、だんだん雲行きが怪しくなってきましたね。この段階で、当初の計画よりも2倍くらい要素が増えてしまいました。アプリケーションだけならまだシンプルだと言えますが、それを上手く運用していくためのツールや手法がとにかく多い。 とはいえ、これらツールの支援無しにはクラウドネイティブな開発が出来ないのも事実。このあたりのツラミについては、第3章にて詳しく説明します。
+
+一方でこのCI/CDの仕組みを一度完成させると、Cloud Nativeの定義で紹介した下記のような利点を享受することができます。
+組織の開発力を向上させるためにも、プロジェクトを始める前にしっかりとしたCI/CD環境を整備するのは大切なことなのです。
+
+ * 疎結合なシステム
+ * 復元力がある
+ * 管理しやすい
+ * 堅牢な自動化により、頻繁かつ期待通りに最小限の労力で大きな変更が可能
+
 
 ===[/column]
 
@@ -139,7 +236,7 @@ k8sクラスタが分かれるということは、GitOps的にもリポジト�
 
  * ユーザー名(必須)
  * GitHubアカウント名(必須)
- * TwitterID(オプション)
+ * TwitterID (オプション)
  * コメント(オプション)
 
 当初は、Google Formsを使ってさっくりと用意しようと考えていました。しかし、よくよく考えてみると以下のような制約があることに気づきます。
@@ -159,7 +256,7 @@ class Project < ApplicationRecord
   include ActiveModel::Validations
   validates_with GitHubUserValidator
   validates :username, uniqueness: true, presence: true, format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
-  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 } 
+  validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 }
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
 (略)
