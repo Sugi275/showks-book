@@ -208,7 +208,8 @@ stagingにpushされたコードは、Concourse CIでユニットテストが行
 
 ユニットテストが通過したら、コンテナイメージのbuildとタグ付け、レジストリへのpushを行います。その後、KubernetesのマニフェストをHelmテンプレートから生成し、デプロイします。これでStaging環境で動作確認が行えるようになります。
 
-その後、開発が終わったとの想定でstagingからmasterブランチに対してPull Requestを投げて貰います。Concourse CIがそれを検知し、テストした後問題が無ければLGTMのコメント後、マージを行います。
+その後、開発が終わったとの想定でstagingからmasterブランチに対してPull Requestを投げて貰います。Concourse CIがそれを検知し、不正なリポジトリからPull Requestが送られていないか
+を確認し、テストした後問題が無ければLGTMのコメント後、マージを行います。
 
 これでmasterブランチに変更が取り込まれましたので、その変更を再びConcourseが検知し、Stagingで作成したイメージへのタグ追加とマニフェスト生成を行います。最後にSpinnakerがデプロイを行って、Productionリリースが完了となります。フローを図にしたものが、@<img>{developer-experience}です。シンプルさを重要視した結果、GitHub Flow@<fn>{github-flow}と呼ばれるブランチ戦略とほぼ同じ仕組みになりました。
 
