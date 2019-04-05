@@ -381,6 +381,8 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
 さて困った・・・と言っていたのがJKDの2週間前。何か代替手段はないかと探していたところ、kubernetes/ingress-nginxに"Add canary annotation and alternative backends for traffic shaping"というPR@<fn>{pr-canary}がマージされていることを発見。これが含まれたv0.21がリリースされたら行けそうだ、とドキドキしながら待っていたのですが、無事JKDの10日前にリリースされました。
 
+//footnote[pr-canary][https://github.com/kubernetes/ingress-nginx/pull/3341]
+
 このingress-nginxの機能により、Ingressのannotationとして
 
 //listnum[ingress.yaml][カナリアリリース用Ingress定義の例][yaml]{
