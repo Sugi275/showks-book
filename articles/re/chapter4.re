@@ -68,7 +68,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
 
 本当はみなさんにデプロイしてもらったアプリケーションをランダムに落としたりしようかみたいな話も出てきましたが、結局はそこまで実現しませんでした。
 
-今回のshowKsでは実際にCI/CDの体験をしてもらいましたが、多少の障害が起きても堅牢に動き続けるshowKsも体験してもらうべく、次回はChaos Monkey@<fn>{chaosmonkey}のようなツールの導入も試してみたいと考えています。
+今回のshowKsでは実際にクラウドネイティブな開発の体験をしてもらいましたが、多少の障害が起きても堅牢に動き続けるshowKsも体験してもらうべく、次回はChaos Monkey@<fn>{chaosmonkey}のようなツールの導入も試してみたいと考えています。
 
 //footnote[chaosengineering][http://principlesofchaos.org/]
 //footnote[chaosmonkey][https://github.com/Netflix/chaosmonkey]
