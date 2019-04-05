@@ -120,6 +120,35 @@ showKsでも、Helmを利用してマニフェストを生成することで再�
 
 == CI/CD
 
+=== いまさら聞けない、クラウドネイティブなCI/CDってなんだろう
+
+クラウドネイティブ、マイクロサービス、アジャイル開発、といった今どきのイケてる風な方法論を語る上で、CI/CDは必須のキーワードとなっています。CNCFのCloud Native Trailmap<https://github.com/cncf/trailmap> でも、Containerizationの次のステップとしてCI/CDが位置付けられており、「いかにCI/CDを効率よく回すか」がクラウドネイティブの主たる目的のひとつであると言っても過言ではありません。
+
+と偉そうに言ってみたものの、僕らは「クラウドネイティブなCI/CD」とは何なのか、ちゃんと定義できているのでしょうか？
+
+CI＝Continuous Integration という言葉は、アプリケーションのビルドの自動化という意味合いでなんとなく使われていることが多いように思います。つまり、
+
+ * 誰かがソースコードをプロジェクトのRepositoryにコミットする
+ * CIツールがその変更を察知して、必要なタスクを実行する
+ * ビルドが自動実行されて、最新のビルド成果物が然るべき場所に格納される
+
+（図を入れる）
+
+という一連の流れが、常に回っている状態（Continuous）というイメージです。ですが上記は本来、CIとCD = Continuous Delivery を両方含んでいます。通常、CIの目的は、複数の開発ブランチが並行して走るプロジェクトにおける「マージの自動化」です。最終的な（本番環境にデプロイできる状態の）ビルド成果物の生成は、本来はCDの範囲となります。
+
+CI/CDのパイプラインを経て生成される成果物、および中間成果物は、一般的にはArtifactと呼ばれます。Javaを例に取ると、.warファイルがこれに当たりますね。
+
+ちょっと待って。僕らがやろうとしているのは「クラウドネイティブな」CI/CDであり、なにも.warファイルをweblogicサーバーにデプロイしたいわけではありません。アプリケーションはコンテナとして動くことが前提ですし、デプロイ先のインフラはKubernetesが前提です。
+
+その場合、CIが生成するArtifactは何になるでしょう？一つの有力な候補は、Docker Imageです。Docker ImageをArtifactとするなら、CI/CDにおけるビルドタスクの一つとしてコンテナイメージのビルドが実行されることになり、生成されたDocker Imageは何らかのイメージレジストリ（DockerHubなど）でバージョン管理することになります。うん、良さげ。これなら.warファイルをNexusで管理する、とかと同じですね。
+
+それだけでしょうか？ArtifactがDocker Imageだけだとすると、Kubernetes
+
+
+
+
+
+
 === Concourse
 
 今回はCIツールとしてConcourseCIを利用しました。
@@ -333,9 +362,53 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 ここまでKubernetes上での2種類のカナリアリリースの実現方法を紹介しましたが、今回showKsではkubernetes/ingress-nginx@<fn>{ingress-nginx}（いわゆるNginx Ingress Controller）を用いたカナリアリリースを利用しました。
 //footnote[ingress-nginx][https://github.com/kubernetes/ingress-nginx]
 
-<ここ執筆お願いしたいです @amsy810 or jyoshise>
+今回CDツールとして採用したSpinnakerですが、カナリアリリースがSpinnakerの「売り」の一つ、という印象をお持ちの方も多いのではないでしょうか。実は今回もSpinnakerによるカナリアリリースを実装しようとしていたのですが、結論としては、SpinnakerはKubernetes V2 Providerへの移行の過渡期ということもあり、ArtifactとしてKubernetes Manifestsを利用する場合はうまくカナリアリリースができないことがわかりました。
+今回、アプリケーションのソースコードは本番リリース前のブランチ（Stagingブランチ）と、本番リリース用のMasterブランチに分かれています。KubernetesクラスタもStagingクラスタとProductionクラスタに分かれており、アプリケーションを定義するManifestもStagingクラスタ用のManifestとProductionクラスタ用のManifestに分かれることになります。
+やりたかったことは、
 
-===[column] カナリアリリース
+ 1. GitのStagingブランチにコードがcommitされる
+ 2. ビルド後、StagingクラスタにManifestが適用される（Podがデプロイされる）→開発者による動作確認
+ 3. StagingブランチからMasterブランチにPRが発行される
+ 4. Stagingクラスタに「カナリア」がデプロイされ、Productionクラスタで稼働中の1バージョン前の本番Podへのトラフィックの一部が流れる
+ 5. カナリアのパフォーマンスに問題があった場合はカナリアを殺し、PRを却下
+ 6. カナリアのパフォーマンスに問題がなければ、StagingブランチをMasterブランチにマージする（→ProductionクラスタのManifestがバージョンアップされる）
+
+といったものでした。@<img>{canary1}はこれを議論していた時の落書きです。なかなか複雑ですよね・・・
+
+//image[canary1][やりたかったカナリアリリース][scale=0.6]{
+//}
+
+ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
+さて困った・・・と言っていたのがJKDの2週間前。何か代替手段はないかと探していたところ、kubernetes/ingress-nginxに"Add canary annotation and alternative backends for traffic shaping"というPR@<fn>{pr-canary}がマージされていることを発見。これが含まれたv0.21がリリースされたら行けそうだ、とドキドキしながら待っていたのですが、無事JKDの10日前にリリースされました。
+
+//footnote[pr-canary][https://github.com/kubernetes/ingress-nginx/pull/3341]
+
+このingress-nginxの機能により、Ingressのannotationとして
+
+//listnum[ingress.yaml][カナリアリリース用Ingress定義の例][yaml]{
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: showks-portal-frontend-temp
+  namespace: showks
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
+    nginx.org/ssl-services: "showks-portal-frontend-temp"
+    ingress.kubernetes.io/ssl-redirect: "true"
+（略）
+//}
+
+のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
+意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
+
+//image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
+//}
+
+
+
+===[column] カナリアリリース、そもそもリリースをどう考えるか
 
 カナリアリリースは、炭鉱夫が有害な一酸化炭素や有毒ガスを検知するためにカナリアを鳥かごに入れて連れていったことに由来すると言われています。
 カナリアは人間よりも有毒ガスなどに敏感なため、人間よりも早く検知することができるため、早く逃げることができるようになります。
