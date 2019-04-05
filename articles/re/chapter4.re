@@ -26,13 +26,22 @@ Kubernetesの特徴の一つとしてよく取り上げられるのが拡張性�
 
 == Service MeshとIstio
 
+(作っているうちに、やっぱここServiceMesh要るよね！と思った話)
+@<fn>{istio}
 (ここjyoshiseかamsy810に追記お願いしたく・・・！)
+
+//footnote[istio][https://istio.io/]
+//footnote[linkerd][https://linkerd.io/]
+//footnote[conduit][https://conduit.io/]
+//footnote[consul][https://www.consul.io/]
 
 == Serverless
 
-KubernetesにServerless Computingの考え方を持ち込むことができるKnativeが注目を集めつつあります。Googleを始めとしてPivotal, IBM, Red Hatなどの企業が開発を進めているこのソフトウェアは、もしかすると2019年の台風の目になるかもしれません。
+KubernetesにServerless Computingの考え方を持ち込むことができるKnative@<fn>{knative}が注目を集めつつあります。Googleを始めとしてPivotal, IBM, Red Hatなどの企業が開発を進めているこのソフトウェアは、もしかすると2019年の台風の目になるかもしれません。
 
 今回はKnativeの特徴であるイベントドリブンなアーキテクチャを活用できそうな場所があまりなかったこと、またKnative自体が登場したばかりで安定しているとは言いがたいことから、採用は見送りました。 しかし、有望なテクノロジーであることは間違いないため、是非試してみたいなと考えています。
+
+//footnote[knative][https://www.knative.dev/]
 
 == アプリケーションの充実
 
