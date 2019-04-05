@@ -73,6 +73,7 @@ CloudからCloud Nativeへ移行するにあたっては、Trail Map@<fn>{trailm
 //blankline
 
 @<b>{CI/CD体験コーナー}
+
  * パブリックリポジトリを用意しておいて、そこに参加者がPR・マージすると各種ツールが走ってデプロイされる
  * 誰でも書ける簡単なGo appを想定(hello, hogehogeを書き換えるレベル)
  * そのCI/CD環境を実際に触れる(SpinnakerのRead Onlyアカウントを払い出しておくなど)
@@ -92,7 +93,7 @@ CloudからCloud Nativeへ移行するにあたっては、Trail Map@<fn>{trailm
  * 『みんなが参加してくれた結果、最終的にこんなんになりました！』と俯瞰して成果を見られるようなアプリに
  ** Redditの企画"Place"みたいなやつ@<fn>{place}
 
-このアイディアを叩き台として、@jyoshise, @kojiha, @tsukamanらにより練るれたアイディアが『お絵描きアプリ』でした。
+このアイディアを叩き台として、@jyoshise, @kojiha, @tsukamanらにより練られたアイディアが『お絵描きアプリ』でした。
 
  * 参加者はshowKsに登録すると、専用のキャンバスが1つ与えられる
  * キャンバスには参加者固有のSNSアカウントやメッセージなどを埋め込める
