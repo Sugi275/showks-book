@@ -383,7 +383,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 
 このingress-nginxの機能により、Ingressのannotationとして
 
-//list[ingress.yaml][][yaml]{
+//listnum[ingress.yaml][カナリアリリース用Ingress定義の例][yaml]{
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -395,6 +395,7 @@ metadata:
     nginx.ingress.kubernetes.io/canary-weight: "20"
     nginx.org/ssl-services: "showks-portal-frontend-temp"
     ingress.kubernetes.io/ssl-redirect: "true"
+（略）
 //}
 
 のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
