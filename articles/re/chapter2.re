@@ -362,9 +362,50 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 ここまでKubernetes上での2種類のカナリアリリースの実現方法を紹介しましたが、今回showKsではkubernetes/ingress-nginx@<fn>{ingress-nginx}（いわゆるNginx Ingress Controller）を用いたカナリアリリースを利用しました。
 //footnote[ingress-nginx][https://github.com/kubernetes/ingress-nginx]
 
-<ここ執筆お願いしたいです @amsy810 or jyoshise>
+今回CDツールとして採用したSpinnakerですが、カナリアリリースがSpinnakerの「売り」の一つ、という印象をお持ちの方も多いのではないでしょうか。実は今回もSpinnakerによるカナリアリリースを実装しようとしていたのですが、結論としては、SpinnakerはKubernetes V2 Providerへの移行の過渡期ということもあり、ArtifactとしてKubernetes Manifestsを利用する場合はうまくカナリアリリースができないことがわかりました。
+今回、アプリケーションのソースコードは本番リリース前のブランチ（Stagingブランチ）と、本番リリース用のMasterブランチに分かれています。KubernetesクラスタもStagingクラスタとProductionクラスタに分かれており、アプリケーションを定義するManifestもStagingクラスタ用のManifestとProductionクラスタ用のManifestに分かれることになります。
+やりたかったことは、
 
-===[column] カナリアリリース
+ 1. GitのStagingブランチにコードがcommitされる
+ 2. ビルド後、StagingクラスタにManifestが適用される（Podがデプロイされる）→開発者による動作確認
+ 3. StagingブランチからMasterブランチにPRが発行される
+ 4. Stagingクラスタに「カナリア」がデプロイされ、Productionクラスタで稼働中の1バージョン前の本番Podへのトラフィックの一部が流れる
+ 5. カナリアのパフォーマンスに問題があった場合はカナリアを殺し、PRを却下
+ 6. カナリアのパフォーマンスに問題がなければ、StagingブランチをMasterブランチにマージする（→ProductionクラスタのManifestがバージョンアップされる）
+
+といったものでした。@<img>{canary1}はこれを議論していた時の落書きです。なかなか複雑ですよね・・・
+
+//image[canary1][やりたかったカナリアリリース][scale=0.6]{
+//}
+
+ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
+さて困った・・・と言っていたのがJKDの2週間前。何か代替手段はないかと探していたところ、kubernetes/ingress-nginxに"Add canary annotation and alternative backends for traffic shaping"というPR@<fn>{pr-canary}がマージされていることを発見。これが含まれたv0.21がリリースされたら行けそうだ、とドキドキしながら待っていたのですが、無事JKDの10日前にリリースされました。
+
+このingress-nginxの機能により、Ingressのannotationとして
+
+//list[ingress.yaml][][yaml]{
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: showks-portal-frontend-temp
+  namespace: showks
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
+    nginx.org/ssl-services: "showks-portal-frontend-temp"
+    ingress.kubernetes.io/ssl-redirect: "true"
+//}
+
+のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
+意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
+
+//image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
+//}
+
+
+
+===[column] カナリアリリース、そもそもリリースをどう考えるか
 
 カナリアリリースは、炭鉱夫が有害な一酸化炭素や有毒ガスを検知するためにカナリアを鳥かごに入れて連れていったことに由来すると言われています。
 カナリアは人間よりも有毒ガスなどに敏感なため、人間よりも早く検知することができるため、早く逃げることができるようになります。
