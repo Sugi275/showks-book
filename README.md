@@ -7,7 +7,7 @@ Re:VIEW向けのフォーマットになっています。
 ## 出力方法
 
 ```
-$ docker pull vvakame/review:3.0
+$ docker pull vvakame/review:3.1
 $ ./build-in-docker.sh
 ```
 
