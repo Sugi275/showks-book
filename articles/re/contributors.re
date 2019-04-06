@@ -7,7 +7,9 @@
 自己紹介
 
 ==== @jyoshise
-自己紹介
+Hewlett Packard Enterpriseの髪の長いおじさんとして知られていたが、JKD v18.12直後に髪を切ったので、今は髪の長くないおじさん。
+showKsでは主にSpinnaker周辺を担当。
+仕事ではWWのChief Architectとして世界を股にかける社畜魂を発揮しているため、本書の担当部分は飛行機の中とシンガポールの自宅（謎）で執筆しました(´;ω;｀)
 
 ==== @inductor
 自己紹介

@@ -156,7 +156,7 @@ CI/CDのパイプラインを経て生成される成果物、および中間成
 
 というのが常に回っている状態がCD、というイメージです。
 
-この場合CDはContinuous DeliveryではなくContinuous Deploymentということになります。
+この場合のCDはContinuous Deliveryの略ではなく、Continuous Deploymentの略である、という説もあるようです。
 
 まあ、その定義にこだわることに大した意味はなくて、要はソースコードからリリースまでのパイプライン全体を考えて、適材適所のツールを使う、ということが大事なのかもしれません。
 
@@ -174,23 +174,30 @@ ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こ
 
 //footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
 
-=== （モテるから）Continuous Deliveryやりたいよね - Spinnaker
+=== Spinnakerでモテたい
 
-Spinnakerというツールはご存じでしょうか。触ったことはないけど、名前だけは知っているという方も多いのでは無いでしょうか？
+Spinnakerというツールはご存じでしょうか。触ったことはないけど、名前だけは知っているという方も多いのでは無いでしょうか？本家であるNetflixをはじめとして、イケてるクラウドネイティブ企業が大規模なサービスのリリースに活用しており、Spinnakerという名前の響きもなんだかかっこよくて、「俺Spinnaker使ってるんだ」というとモテそうです。
 
-よくCI/CDという形でひとまとめに語られますが、Continuous IntegrationとContinuous Deliveryは異なるものであり、それぞれに適したツールが存在します。Spinnakerは、Continuous Deliveryに特化したツールです。CIツールでデリバリーまでやってしまうことも可能なのですが、やはりショーケースとしてこの人気ツールを外すことはできないでしょう。というわけで、ツールがひとつ増えました。
+Spinnakerは、Continuous Deliveryに特化したツールであり、アプリケーションのビルド部分については別途CIツールを利用することが前提となっています。また、ConcourseのようなCIツールはデリバリーまで含めたパイプラインを実行することも可能なのですが、やはりショーケースとしてこの人気ツールを外すことはできないでしょう。@<b>{だってモテたいし}。というわけで、ツールがひとつ増えました。
 
-Spinnakerでは TODO からPipeline設定をYAMLで定義することが可能になったため、showKsではWebUIから登録するのではなく、YAMLから登録する形にしました。
+NetflixがSpinnakerをオープンソース化したのは2015年です。最近のようですが、当時はマルチクラウドに対応したアプリケーションのデリバリといえば、IaaSに対応する仮想マシンイメージのビルドとデプロイ、あるいはPaaSへのデプロイを意味していました。そのため、従来のSpinnakerの機能は、EC2のようなIaaSや、Google App EngineのようなPaaSをターゲット（Cloud Provider）として、CIが生成するArtifactをデリバリするというものでした。
+
+その後Kubernetesが急速に発展し、Infrastructure as CodeであるマニフェストをアプリケーションのArtifactとして扱うという考え方が非常に有効であることが認識されるようになりました。そこで2018年になって、SpinnakerにもKubernetes V2 Provider(Manifest Based)が登場しました。これはSpinnakerにとっては、個々のアプリケーションに対するインフラストラクチャの定義を、Spinnakerの設定ではなくアプリケーションのArtifactとして取り扱うという意味で、大きな変換点となります。
+
+showKs企画時点では、Kubernetes V2 Providerはまだbeta扱いでした。でもこの先進的なコンセプトを使わない手はないでしょう。@<b>{だってモテたいし}。というわけで、迷わずKubernetes V2 Providerを使うことに決定。
+
+SpinnakerはNetflixが作っただけあって、それ自体がマイクロサービスアーキテクチャで作られています。Spinnakerのデプロイ方法はいろいろあるのですが、今回はせっかくなのでKubernetesクラスタ上にデプロイすることにしました。デプロイヤーとしては専用のHalyardというツールがあり、Spinnakerのデプロイ構成や各種設定は単一のYAMLファイルとして管理することができます。ここでもInfrastructure as Code。
+
+また、パイプラインの設定をWeb UIからポチポチやらなければならない、つまりパイプライン定義がImmutableでないことがSpinnakerのイケてないところと言われていましたが、最近ではいちおう定義されたパイプラインをJSONで吐き出したり、JSONで記述したパイプラインを読み込んだり、といったことが可能になっています。ただ、そのためのCLIツールであるspinの機能はこの時点ではかなり限定されていて、テンプレートからの生成といったことはできませんでした@<fn>{spinnaker-json}。そのためshowKsでは、テンプレートとなるJSONを手書きして、そこにPerl置換でパラメーターを埋め込むという方法をとりました。
+
+//footnote[spinnaker-json][本書の執筆時点ではできるようになったようです。https://www.spinnaker.io/guides/spin/pipeline-templates/]
 
 
-SpinnakerのPipeline YAMLはGitHub@<fn>{spinnaker-pipelines}からダウンロード可能です
+SpinnakerのPipeline JSONはGitHub@<fn>{spinnaker-pipelines}からダウンロード可能です。
 
-(全体的に説明の追加要)
 
 //footnote[spinnaker-pipelines][https://github.com/containerdaysjp/showks-spinnaker-pipelines]
 
-//image[iac][CI/CDの実践][scale=0.6]{
-//}
 
 == GitOps
 
@@ -377,7 +384,9 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 //footnote[ingress-nginx][https://github.com/kubernetes/ingress-nginx]
 
 今回CDツールとして採用したSpinnakerですが、カナリアリリースがSpinnakerの「売り」の一つ、という印象をお持ちの方も多いのではないでしょうか。実は今回もSpinnakerによるカナリアリリースを実装しようとしていたのですが、結論としては、SpinnakerはKubernetes V2 Providerへの移行の過渡期ということもあり、ArtifactとしてKubernetes Manifestsを利用する場合はうまくカナリアリリースができないことがわかりました。
+
 今回、アプリケーションのソースコードは本番リリース前のブランチ（Stagingブランチ）と、本番リリース用のMasterブランチに分かれています。KubernetesクラスタもStagingクラスタとProductionクラスタに分かれており、アプリケーションを定義するManifestもStagingクラスタ用のManifestとProductionクラスタ用のManifestに分かれることになります。
+
 やりたかったことは、
 
  1. GitのStagingブランチにコードがcommitされる
@@ -393,6 +402,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 //}
 
 ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
+
 さて困った・・・と言っていたのがJKDの2週間前。何か代替手段はないかと探していたところ、kubernetes/ingress-nginxに"Add canary annotation and alternative backends for traffic shaping"というPR@<fn>{pr-canary}がマージされていることを発見。これが含まれたv0.21がリリースされたら行けそうだ、とドキドキしながら待っていたのですが、無事JKDの10日前にリリースされました。
 
 //footnote[pr-canary][https://github.com/kubernetes/ingress-nginx/pull/3341]
@@ -415,6 +425,7 @@ metadata:
 //}
 
 のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
+
 意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
 
 //image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
@@ -431,6 +442,7 @@ metadata:
 また、従来は十分にテストをしてからリリースする傾向でしたが、近年マイクロサービス化を含むクラウドネイティブ化された状況ではカナリアリリースなどを利用してリスクを低減することで、本番環境へのリリースを気軽に行えるようにもなってきたなと感じています。
 リリースが早まることで、新しい機能をいち早くユーザに届けることができるのもクラウドネイティブがなし得ることですね。
 
+カナリアリリースのようなリリース戦略と、CI/CDパイプラインによる自動化、さらにはマイクロサービスアーキテクチャとアジャイル的な開発手法を活用することで、各開発ブランチへのコミットのサイクル、つまり開発者のクリエイティビティと、プロダクションへのリリースのサイクルを近づけることが可能になります。CI/CDパイプラインとリリースマネジメントをセットで設計することは、アジリティのキモと言えるのではないでしょうか。
 ===[/column]
 
 
