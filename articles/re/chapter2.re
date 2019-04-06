@@ -226,8 +226,8 @@ SpinnakerのPipeline JSONはGitHub@<fn>{spinnaker-pipelines}からダウンロ�
 様々なツールがありますが、アプリケーション開発者はGitHub上のソースコードを更新することで開発を進めていきます。
 そんなバックグラウンドと非常に相性が良いと思うのがGitOpsです。ChatOpsのGit版ですね！
 
-GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです。@<fn>{gitops-weaveworks}
-GitOpsではContinious DeliveryをGitリポジトリを介して行うことにより、全ての変更はPull-Requestをベースに行われていきます。
+GitOpsはWeaveworksが提唱するContinuous Deliveryを実現する手法の一つです。@<fn>{gitops-weaveworks}
+GitOpsではContinuous DeliveryをGitリポジトリを介して行うことにより、全ての変更はPull-Requestをベースに行われていきます。
 GitOpsで登場するリポジトリは2種類存在します。一つはアプリケーションのソースコード用のリポジトリ、もう一つはKubernetesのマニフェスト用のリポジトリです。
 流れとしては、まずアプリケーション開発者はアプリケーションのリポジトリに対してPull-Requestを作成後、UnitTest・コンテナイメージのビルドなどのContinuous Integrationが行われます。
 ここまでは従来のアプリケーション開発と何も変わりません。
