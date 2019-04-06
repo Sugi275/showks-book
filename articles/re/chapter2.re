@@ -35,7 +35,9 @@
 
 === Kubernetes
 
-アプリケーションはすべてKubernetesの上で動かします。KubernetesはYAML形式で書かれた宣言的コード（マニフェスト）を用いて設定を行っていく仕組みのため、何もしなくても自動的にInfrastructure as Codeが実現できることになります。
+アプリケーションはすべてKubernetesの上で動かします。もともとKubernetesはYAML形式で書かれた宣言的コード（マニフェスト）を用いて設定を行っていく仕組みのため、何もしなくても自動的にInfrastructure as Codeが実現できることになります。
+Infrastruture as Code？Kubernetesには朝飯前です。
+
 例えば、nginxのコンテナを3つ起動する場合は下記のようなマニフェスト記述し、Kubernetesに登録するだけでその状態に維持し続けてくれます。
 そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。変更手順はとっても簡単ですね！
 
@@ -66,11 +68,12 @@ CI/CDの整備をする際にはこのマニフェストをどのように利用
 
 === Helm
 
-Kubernetesのマニフェストを書いていくと、同じようなYAMLファイルをたくさん書く必要が出てきます。しかし、大量のマイクロサービスが作られる環境では共通する部分も多く、上手くテンプレート化することで記述量を削減することができます。
+Kubernetesのマニフェストを書いていくと、同じようなYAMLファイルをたくさん書く必要が出てきますね。
+しかし、大量のマイクロサービスが作られる環境では共通する部分も多く、エンジニアなら誰しも上手くテンプレート化することで記述量を削減したくなってきます。
 マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 "helm install" コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
-しかし、今回はパッケージマネジメントの仕組みは使わず、純粋なテンプレートエンジンとして利用しています。
+しかし、今回はパッケージマネジメントの仕組みは使わず、純粋なテンプレートエンジンとして利用しています（ここ重要）。
 
-例えば通常のWebアプリケーションを動作させる場合、コンテナを起動させるDeploymentリソースとServiceリソースを同時に作成することが多いかと思います。
+例えば通常のWebアプリケーションを動作させる場合、コンテナを起動させるDeploymentリソースとエンドポイントを作るServiceリソースを同時に作成することが多いかと思います。
 こういった際にはマイクロサービスごとに同じような大量のマニフェストを定義しなければならず、変更漏れなどの可能性も出てきてしまいます。
 Helmでは下記のようなテンプレートとValuesファイルを利用することで、マニフェストのテンプレーティングを行うことが可能です。
 
@@ -199,7 +202,10 @@ SpinnakerのPipeline JSONはGitHub@<fn>{spinnaker-pipelines}からダウンロ�
 //footnote[spinnaker-pipelines][https://github.com/containerdaysjp/showks-spinnaker-pipelines]
 
 
-== GitOps
+== GitOpsでアプリケーション開発者との親和性も
+
+様々なツールがありますが、アプリケーション開発者はGitHub上のソースコードを更新することで開発を進めていきます。
+そんなバックグラウンドと非常に相性が良いと思うのがGitOpsです。ChatOpsのGit版ですね！
 
 GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです（https://www.weave.works/technologies/gitops/）。
 GitOpsではContinious DeliveryをGitリポジトリを介して行うことにより、全ての変更はPull-Requestをベースに行われていきます。
@@ -213,7 +219,7 @@ GitOpsではこのCIが行われた際に、マニフェスト用のリポジト
 //}
 
 GitOpsはあくまでも概念であり、マニフェストの更新や更新時のKubernetesクラスタへの適用といった実装は多岐に渡ります。
-GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}などがありますが、今回はHelmを利用したマニフェスト生成とSpinnakerを利用しています。
+GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}などがありますが、今回はHelmを利用したマニフェスト生成とSpinnakerを利用しています。@<b>{だってモテたいし}。
 
 //footnote[jenkinsx][https://github.com/jenkins-x]
 //footnote[flux][https://github.com/weaveworks/flux]
@@ -509,20 +515,20 @@ metadata:
 //footnote[showks-aggregator][https://github.com/containerdaysjp/showks-aggregator]
 
 //listnum[app.js][CanvasアプリのインスタンスをWatchで監視する部分][js]{
-function watchService（resourceVersion） {
-  console.log（`Start watching services from resourceVersion: ${resourceVersion}`）;
-  let watch = new k8s.Watch（kc）;
-  let req = watch.watch（
+function watchService(resourceVersion) {
+  console.log(`Start watching services from resourceVersion: ${resourceVersion}`);
+  let watch = new k8s.Watch(kc);
+  let req = watch.watch(
     k8sApiEndpoint,
     {
       labelSelector: 'class=showks-canvas',
       resourceVersion: resourceVersion
     },
-    （type, obj） => {
+    (type, obj) => {
       try {
-        if （type == 'ADDED'） {
-          console.log（'New instance was added'）;
-          addInstance（obj）;
+        if (type == 'ADDED') {
+          console.log('New instance was added');
+          addInstance(obj);
 （略）
 //}
 
