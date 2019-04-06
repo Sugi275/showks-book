@@ -477,6 +477,8 @@ metadata:
 
 真面目な話、「Watch」を使ったインスタンスのデプロイ状態の監視とアトリビュートの取得処理は、Kubernetes APIを使った自動化の参考にしていただけることと思います。showks-aggregatorのソースコードもお見逃しなく。
 
+//footnote[showks-aggregator][https://github.com/containerdaysjp/showks-aggregator]
+
 //listnum[app.js][CanvasアプリのインスタンスをWatchで監視する部分][js]{
 function watchService(resourceVersion) {
   console.log(`Start watching services from resourceVersion: ${resourceVersion}`);
@@ -494,9 +496,6 @@ function watchService(resourceVersion) {
           addInstance(obj);
 (略)
 //}
-
-//footnote[showks-aggregator][https://github.com/containerdaysjp/showks-aggregator]
-
 
 == 運用無くして何がクラウドネイティブだ。 モニタリングツールを考えよう
 
