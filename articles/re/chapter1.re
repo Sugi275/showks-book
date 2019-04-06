@@ -8,7 +8,7 @@
 
 これが、参加者の視点として見られるshowKsです。これだけでは、単にお絵描きアプリをデプロイするだけの仕組みに思えてしまうかもしれませんね。でも、この仕組みの裏には、いわゆる『クラウドネイティブ』な要素を沢山盛り込んであるんです。 その仕組みを説明していく前に、そもそもなんで僕たちがこんな企画を始めたのかをお話させてください。
 
-== Cloud Nativeのショーケース作ろう -企画のきっかけ
+== クラウドネイティブのショーケース作ろう -企画のきっかけ
 
 showKsは、[K]ubernetesを用いたCI/CDや開発環境を実際に試せるショーケースとして命名されました。
 
@@ -28,11 +28,11 @@ Japan Container Days(JKD) v18.12が開催されたのは12月ですが、実行�
 
 //footnote[interop][https://www.interop.jp/]
 
-===[column] 【コラム】そもそもCloud Nativeってなんだっけ
+===[column] 【コラム】そもそもクラウドネイティブってなんだっけ
 
-Cloud Nativeはバズワードとして語られているように見えて、実はLinux FoundationのサブプロジェクトのCloud Native Computing Foundation（CNCF）のTOCが定義を公開しています@<fn>{cncf-toc}。
+クラウドネイティブはバズワードとして語られているように見えて、実はLinux FoundationのサブプロジェクトのCloud Native Computing Foundation（CNCF）のTOCが定義を公開しています@<fn>{cncf-toc}。
 
-この定義を簡潔に表現するとCloud Nativeな技術を利用することで、
+この定義を簡潔に表現するとクラウドネイティブな技術を利用することで、
 
  * 疎結合なシステム
  * 復元力がある
@@ -41,10 +41,10 @@ Cloud Nativeはバズワードとして語られているように見えて、�
  * 堅牢な自動化により、頻繁かつ期待通りに最小限の労力で大きな変更が可能
 
 といった特徴を持ったシステムをオープンなテクノロジーを利用してスケーラブルに実現できるようになります。
-このCloud Native自体はKubernetes・Docker・マイクロサービスなどが必須なわけではありません。
-しかし、こういった技術を利用することによりCloud Nativeを実現する近道となります。
-CloudからCloud Nativeへ移行するにあたっては、Trail Map@<fn>{trailmap}についても参考にしてみてください。
-なお、showKsでもこのTrail Mapにある「Containerization」「CI/CD」「Orchestration & Application Definition」「Observaility & Analysis」といった順に進んでいきCloud Nativeを実現していきました。
+このクラウドネイティブ自体はKubernetes・Docker・マイクロサービスなどが必須なわけではありません。
+しかし、こういった技術を利用することによりクラウドネイティブを実現する近道となります。
+Cloudからクラウドネイティブへ移行するにあたっては、Cloud Native Trail Map@<fn>{trailmap}についても参考にしてみてください。
+なお、showKsでもこのTrail Mapにある「Containerization」「CI/CD」「Orchestration & Application Definition」「Observaility & Analysis」といった順に進んでいきクラウドネイティブを実現していきました。
 
 //footnote[cncf-toc][https://github.com/cncf/toc/blob/master/DEFINITION.md]
 //footnote[trailmap][https://github.com/cncf/trailmap]
