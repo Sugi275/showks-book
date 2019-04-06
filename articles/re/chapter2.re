@@ -37,7 +37,7 @@
 
 アプリケーションはすべてKubernetesの上で動かします。KubernetesはYAML形式で書かれた宣言的コード（マニフェスト）を用いて設定を行っていく仕組みのため、何もしなくても自動的にInfrastructure as Codeが実現できることになります。
 例えば、nginxのコンテナを3つ起動する場合は下記のようなマニフェスト記述し、Kubernetesに登録するだけでその状態に維持し続けてくれます。
-そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。
+そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。変更手順はとっても簡単ですね！
 
 //emlistnum[][yaml]{
 apiVersion: apps/v1
@@ -67,14 +67,14 @@ CI/CDの整備をする際にはこのマニフェストをどのように利用
 === Helm
 
 Kubernetesのマニフェストを書いていくと、同じようなYAMLファイルをたくさん書く必要が出てきます。しかし、大量のマイクロサービスが作られる環境では共通する部分も多く、上手くテンプレート化することで記述量を削減することができます。
-マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 `helm install` コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
+マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 "helm install" コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
 しかし、今回はパッケージマネジメントの仕組みは使わず、純粋なテンプレートエンジンとして利用しています。
 
 例えば通常のWebアプリケーションを動作させる場合、コンテナを起動させるDeploymentリソースとServiceリソースを同時に作成することが多いかと思います。
 こういった際にはマイクロサービスごとに同じような大量のマニフェストを定義しなければならず、変更漏れなどの可能性も出てきてしまいます。
-Helmでは下記のようなテンプレートとValuesファイルをを利用することで、マニフェストのテンプレーティングを行うことが可能です。
+Helmでは下記のようなテンプレートとValuesファイルを利用することで、マニフェストのテンプレーティングを行うことが可能です。
 
-//listnum[Helmテンプレートの例][yaml]{
+//listnum[yaml][Helmテンプレートの例]{
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -96,7 +96,7 @@ spec:
             - containerPort: {{ .Values.port }}
 //}
 
-//listnum[valuesファイルの例][yaml]{
+//listnum[yaml][valuesファイルの例]{
 appName: my-nginx
 replicas: 1
 image:
@@ -113,8 +113,7 @@ showKsでも、Helmを利用してマニフェストを生成することで再�
 //image[iac][Infrastructure as Codeで環境をプロビジョニング][scale=0.5]{
 //}
 
-
-
+TODO
 (helmの図解やもうちょっと細かい説明をここに入れたい)
 
 
@@ -170,6 +169,7 @@ ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こ
 
 利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です
 
+TODO
 (全体的に説明の追加要)
 
 //footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
@@ -219,7 +219,7 @@ GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}�
 //footnote[flux][https://github.com/weaveworks/flux]
 
 GitOpsを採用することにより、多くのメリットがあります。
-1つはKubernetesのマニフェストをGitリポジトリに保管しておくことにより、Kubernetesの状態に関してSingle Source of Truthを実現することが可能です。
+1つはKubernetesのマニフェストをGitリポジトリに保管しておくことにより、Kubernetesの状態に関してSingle Source of Truthを実現することが可能な点です。
 システム全体の状態がマニフェストとしてGitリポジトリ上に管理されているため、障害時には再度宣言的に記述されたマニフェストを適用することにより迅速に回復させることが可能になります。
 また、Kubernetesへの変更は全てGitリポジトリを介して行われるという特性上、変更の監査履歴としても利用することが可能です。
 
@@ -284,13 +284,14 @@ stagingにpushされたコードは、Concourse CIでユニットテストが行
 //image[developer-experience][デベロッパーワークフロー][scale=0.8]{
 //}
 
+TODO
 !!!! ブランチ分けでやるのか、リポジトリ分けでやるのかの話も書く
 
 == 本番を想定するならば、少なくとも2面は環境必要だよね
 
 ディスカッションしている間に、こんな話も出てきました。『パイプラインをProductionとStagingに分けて作ってるけどさあ、環境自体はどうする･･･?』
 
-確かに僕らは今までProduction,Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるKubernetesのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、Kubernetesクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
+確かに僕らは今までProduction・Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるKubernetesのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、Kubernetesクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
 
 Kubernetesクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
 
@@ -424,7 +425,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 
 //footnote[pr-canary][https://github.com/kubernetes/ingress-nginx/pull/3341]
 
-このingress-nginxの機能により、Ingressのannotationとして
+このingress-nginxの機能により、Ingressのannotationとして下記のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
 
 //listnum[ingress.yaml][カナリアリリース用Ingress定義の例][yaml]{
 apiVersion: extensions/v1beta1
@@ -440,8 +441,6 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "true"
 （略）
 //}
-
-のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
 
 意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
 
@@ -472,7 +471,7 @@ metadata:
 
 プロジェクトをはじめたきっかけとして「クラウドネイティブなインフラを作って、参加者の人に面白さを伝える」という思いが僕たちにはありました。そのため、インフラの構想はどんどん膨らむ一方、アプリケーションの中身やその設計についてはあまり深く考えられていませんでした（正確に言うと、アプリケーションの実装を実際に行う人が少なかったとも言えます）。そして、あれこれ手を動かしながら試行錯誤を繰り返す中で、次第に以下のような形に収束していきました。
 
- * 参加者は1つの独立したサービスを持ち、それを自分で管理できる
+ * 参加者は1つの独立したサービスを持ち、それを自分で管理できる（マイクロサービスのプロジェクトオーナとなるイメージ）
  * 各マイクロサービスは参加者のアクション（showKs form）を起点として動的に払い出される
  * 各サービスは共通のエンドポイントを持ち、それをアグリゲーターによって集約して可観測な状態にする
  * アグリゲーターはKubernetesのAPIを使って後ろにいる各サービスたちを常に監視していて、サービスが増えたり減ったりしたときにはそれがリアルタイムで更新される
