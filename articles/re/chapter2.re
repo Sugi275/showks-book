@@ -207,7 +207,7 @@ SpinnakerのPipeline JSONはGitHub@<fn>{spinnaker-pipelines}からダウンロ�
 様々なツールがありますが、アプリケーション開発者はGitHub上のソースコードを更新することで開発を進めていきます。
 そんなバックグラウンドと非常に相性が良いと思うのがGitOpsです。ChatOpsのGit版ですね！
 
-GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです（https://www.weave.works/technologies/gitops/）。
+GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです。@<fn>{gitops-weaveworks}
 GitOpsではContinious DeliveryをGitリポジトリを介して行うことにより、全ての変更はPull-Requestをベースに行われていきます。
 GitOpsで登場するリポジトリは2種類存在します。一つはアプリケーションのソースコード用のリポジトリ、もう一つはKubernetesのマニフェスト用のリポジトリです。
 流れとしては、まずアプリケーション開発者はアプリケーションのリポジトリに対してPull-Requestを作成後、UnitTest・コンテナイメージのビルドなどのContinuous Integrationが行われます。
@@ -221,6 +221,7 @@ GitOpsではこのCIが行われた際に、マニフェスト用のリポジト
 GitOpsはあくまでも概念であり、マニフェストの更新や更新時のKubernetesクラスタへの適用といった実装は多岐に渡ります。
 GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}などがありますが、今回はHelmを利用したマニフェスト生成とSpinnakerを利用しています。@<b>{だってモテたいし}。
 
+//footnote[gitops-weaveworks][https://www.weave.works/technologies/gitops/]
 //footnote[jenkinsx][https://github.com/jenkins-x]
 //footnote[flux][https://github.com/weaveworks/flux]
 
@@ -335,7 +336,8 @@ RoRを採用したことで、ActiveRecordの持つ強力なバリデータに�
 class Project < ApplicationRecord
   include ActiveModel::Validations
   validates_with GitHubUserValidator
-  validates :username, uniqueness: true, presence: true, format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
+  validates :username, uniqueness: true, presence: true,
+            format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
   validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 }
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
@@ -422,7 +424,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 
 といったものでした。@<img>{canary1}はこれを議論していた時の落書きです。なかなか複雑ですよね・・・
 
-//image[canary1][やりたかったカナリアリリース][scale=0.6]{
+//image[canary1][やりたかったカナリアリリース][scale=0.8]{
 //}
 
 ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
@@ -450,7 +452,7 @@ metadata:
 
 意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
 
-//image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
+//image[canary2][ingress-nginxによるカナリアリリース][scale=0.8]{
 //}
 
 
@@ -489,7 +491,7 @@ metadata:
 
 通信を集約する「aggregator」には、全部のマイクロサービスを把握するという重要な役割があります。各マイクロサービスは、デプロイされた時点で親である「aggregator」に自分の情報を通知する、普通だったらこんな風に作りますよね。
 
-//image[aggregator1][普通の作り方][scale=0.4]{
+//image[aggregator1][普通の作り方][scale=0.5]{
 //}
 
 でもアプリチームは考えました。
@@ -505,7 +507,7 @@ metadata:
 
 という仕様に落ち着いたのです。
 
-//image[aggregator2][Kubernetes APIでCanvasインスタンスを監視][scale=0.4]{
+//image[aggregator2][Kubernetes APIでCanvasインスタンスを監視][scale=0.5]{
 //}
 
 使ったのはKubernetes公式サポートのJavaScriptライブラリ。非常によくできたライブラリで、Kubernetes APIのほぼ全機能をカバーしているようです。ただし使い方はソースコードに書いてあるからね、JavaScriptだし大丈夫だよね、のまさにフルサポート（泣。こうして、人知れずAPI呼び出しのデバッグに明け暮れる、というより暮れて明ける夜が続いたのでした。
