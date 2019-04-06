@@ -166,16 +166,19 @@ CI/CDのパイプラインを経て生成される成果物、および中間成
 
 === Concourse CI
 
-今回はCIツールとしてConcourse CIを利用しました。
-Concourse CIではCI PipelineをYAMLで定義することが可能なため、こちらもコード化を行うことが可能です。あらやだ素敵。
-また、Helmを使ってKubernetes上に簡単にデプロイしたり、BOSHを使ってVM上に簡単にデプロイすることも可能な点も良いところですね。あらやだ素敵。
+今回はCIツールとしてConcourse@<fn>{concourse}を利用しました。 ConcourseはPivotal社が中心となりOSSとして開発が進められているCIツールです。
 
-TODO
-（全体的に説明の追加要）
+ * 徹底的にシンプルさを追求した設計・UI
+ * Pipelineを第一に考える設計
+ * PieplineはYAMLとして定義
 
+といった特徴があります。見通しの良いシンプルなUIでデモに適していたこと、YAMLで定義できるのでIaCが実現しやすかったことが決め手となり、採用に至りました。
 
-利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です。
+ConcourseはDocker composeやKubernetesの上で動かしたり、BOSHというライフサイクルマネジメントシステムの上で動かすことも可能です。今回の設計だと、CIにかなりの負担がかかることが考えられたので、安定性重視でBOSHの上で稼働させました。みなさんが試す場合は、Docker composeやHelmを使ってインストールしてみるのが手軽でお勧めです。
 
+showKsで利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です。
+
+//footnote[concourse][https://concourse-ci.org]
 //footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
 
 === Spinnakerでモテたい
