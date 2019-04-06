@@ -384,7 +384,9 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 //footnote[ingress-nginx][https://github.com/kubernetes/ingress-nginx]
 
 今回CDツールとして採用したSpinnakerですが、カナリアリリースがSpinnakerの「売り」の一つ、という印象をお持ちの方も多いのではないでしょうか。実は今回もSpinnakerによるカナリアリリースを実装しようとしていたのですが、結論としては、SpinnakerはKubernetes V2 Providerへの移行の過渡期ということもあり、ArtifactとしてKubernetes Manifestsを利用する場合はうまくカナリアリリースができないことがわかりました。
+
 今回、アプリケーションのソースコードは本番リリース前のブランチ（Stagingブランチ）と、本番リリース用のMasterブランチに分かれています。KubernetesクラスタもStagingクラスタとProductionクラスタに分かれており、アプリケーションを定義するManifestもStagingクラスタ用のManifestとProductionクラスタ用のManifestに分かれることになります。
+
 やりたかったことは、
 
  1. GitのStagingブランチにコードがcommitされる
@@ -400,6 +402,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 //}
 
 ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
+
 さて困った・・・と言っていたのがJKDの2週間前。何か代替手段はないかと探していたところ、kubernetes/ingress-nginxに"Add canary annotation and alternative backends for traffic shaping"というPR@<fn>{pr-canary}がマージされていることを発見。これが含まれたv0.21がリリースされたら行けそうだ、とドキドキしながら待っていたのですが、無事JKDの10日前にリリースされました。
 
 //footnote[pr-canary][https://github.com/kubernetes/ingress-nginx/pull/3341]
@@ -422,6 +425,7 @@ metadata:
 //}
 
 のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
+
 意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
 
 //image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
