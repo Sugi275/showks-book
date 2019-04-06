@@ -16,16 +16,16 @@
 
 第1章でも述べたように、showKsでは@<b>{お持ち帰り}が大きなテーマのひとつでした。お絵描きアプリで遊んで、その仕組みを説明されただけでは、なかなか知識として定着しませんよね。僕たちが作った仕組みそのものを持ち帰ってもらい、皆さんの環境上でクラウドネイティブなCI/CDを実現してもらいたかったのです。
 
-だからといって、昔ながらの@<b>{構築手順書}には絶対にしたくなかったんです。だって@<b>{かっこ悪いもん}。じゃあどうするか？ コード化するに決まってるでしょう！ そう、Infrastructure as Code(IaC)をやれば、持ち帰りやすくなりますよね。
+だからといって、昔ながらの@<b>{構築手順書}には絶対にしたくなかったんです。だって@<b>{かっこ悪いもん}。じゃあどうするか？ コード化するに決まってるでしょう！ そう、Infrastructure as Code（IaC）をやれば、持ち帰りやすくなりますよね。
 
 === Terraform
 
-マネージドのKubernetesを使いたい！となったとき、第一の選択肢に上がるのがGoogle Kubernetes Engine(GKE)でしょう。今回のshowKsでも、GKEを利用しました。その他、アプリケーションで利用するファイルの置き場や静的IPなども必要となりますので、以下のサービスを利用しました。
+マネージドのKubernetesを使いたい！となったとき、第一の選択肢に上がるのがGoogle Kubernetes Engine（GKE）でしょう。今回のshowKsでも、GKEを利用しました。その他、アプリケーションで利用するファイルの置き場や静的IPなども必要となりますので、以下のサービスを利用しました。
 
  * Google Cloud Storage
  * Google Cloud DNS
  * Static External IP
- * Google Compute Engine(踏み台サーバー用)
+ * Google Compute Engine（踏み台サーバー用）
 
 マネージドサービスはとても便利ですし、皆さん結構GUIを使ってポチポチ構築されているのではないでしょうか。でも、GUIを使うのは手数がかかりますし、再現性の点においてもあまり好ましくありません。そこで、これらをプロビジョニングする仕組みとして、HashiCorpのTerraformを利用しました。
 
@@ -37,7 +37,7 @@
 
 アプリケーションはすべてKubernetesの上で動かします。KubernetesはYAML形式で書かれた宣言的コード（マニフェスト）を用いて設定を行っていく仕組みのため、何もしなくても自動的にInfrastructure as Codeが実現できることになります。
 例えば、nginxのコンテナを3つ起動する場合は下記のようなマニフェスト記述し、Kubernetesに登録するだけでその状態に維持し続けてくれます。
-そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。
+そのため、Kubernetesでアプリケーションのアップデートを行う際には、下記のマニフェストの17行目の「nginx:1.12」を「nginx:1.13」のようにイメージタグを変更して再登録することで利用するコンテナイメージ（アプリケーション）のアップデートを行うことになります。変更手順はとっても簡単ですね！
 
 //emlistnum[][yaml]{
 apiVersion: apps/v1
@@ -67,14 +67,14 @@ CI/CDの整備をする際にはこのマニフェストをどのように利用
 === Helm
 
 Kubernetesのマニフェストを書いていくと、同じようなYAMLファイルをたくさん書く必要が出てきます。しかし、大量のマイクロサービスが作られる環境では共通する部分も多く、上手くテンプレート化することで記述量を削減することができます。
-マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 `helm install` コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
+マニフェスト作成を助けるツールはいくつかありますが、今回はその中でも最も有名なHelmを採用しました。Helmはパッケージマネージャーとして知られており、 "helm install" コマンドで様々なアプリケーションを簡単にKubernetesにデプロイすることが出来ます。
 しかし、今回はパッケージマネジメントの仕組みは使わず、純粋なテンプレートエンジンとして利用しています。
 
 例えば通常のWebアプリケーションを動作させる場合、コンテナを起動させるDeploymentリソースとServiceリソースを同時に作成することが多いかと思います。
 こういった際にはマイクロサービスごとに同じような大量のマニフェストを定義しなければならず、変更漏れなどの可能性も出てきてしまいます。
-Helmでは下記のようなテンプレートとValuesファイルをを利用することで、マニフェストのテンプレーティングを行うことが可能です。
+Helmでは下記のようなテンプレートとValuesファイルを利用することで、マニフェストのテンプレーティングを行うことが可能です。
 
-//listnum[Helmテンプレートの例][yaml]{
+//listnum[yaml][Helmテンプレートの例]{
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -96,7 +96,7 @@ spec:
             - containerPort: {{ .Values.port }}
 //}
 
-//listnum[valuesファイルの例][yaml]{
+//listnum[yaml][valuesファイルの例]{
 appName: my-nginx
 replicas: 1
 image:
@@ -113,9 +113,8 @@ showKsでも、Helmを利用してマニフェストを生成することで再�
 //image[iac][Infrastructure as Codeで環境をプロビジョニング][scale=0.5]{
 //}
 
-
-
-(helmの図解やもうちょっと細かい説明をここに入れたい)
+TODO
+（helmの図解やもうちょっと細かい説明をここに入れたい）
 
 
 == CI/CD
@@ -130,7 +129,7 @@ CI/CDのパイプラインを経て生成される成果物、および中間成
 
 ちょっと待って。僕らがやろうとしているのは「クラウドネイティブな」CI/CDであり、なにも.warファイルをweblogicサーバーにデプロイしたいわけではありません。アプリケーションはコンテナとして動くことが前提ですし、デプロイ先のインフラはKubernetesが前提です。その場合、CI/CDパイプラインが生成するArtifactは何になるでしょう？
 
-一つの有力な候補は、Docker Imageです。Docker ImageをArtifactとするなら、CI/CDにおけるビルドタスクの一つとしてコンテナイメージのビルド(docker build)が実行されることになり、生成されたDocker Imageは何らかのイメージレジストリ（DockerHubなど）でバージョン管理することになります。これであれば、.warファイルをNexusで管理する、とかと大して違いませんね。
+一つの有力な候補は、Docker Imageです。Docker ImageをArtifactとするなら、CI/CDにおけるビルドタスクの一つとしてコンテナイメージのビルド（docker build）が実行されることになり、生成されたDocker Imageは何らかのイメージレジストリ（DockerHubなど）でバージョン管理することになります。これであれば、.warファイルをNexusで管理する、とかと大して違いませんね。
 
 ですが、それだけでしょうか？ArtifactがDocker Imageだけだとすると、Kubernetes上にはそれだけではデプロイできません。
 
@@ -139,7 +138,7 @@ CI/CDのパイプラインを経て生成される成果物、および中間成
 このように、アプリケーションのバイナリ及びそれを含むDocker Imageだけではなく、その実行状態を定義するInfrastructure as Code自体をArtifactとして取り扱うことが、クラウドネイティブなCI/CDパイプラインと言えるのではないでしょうか。
 
 
-===[column] CIとCDの境界線
+===[column] 【コラム】CIとCDの境界線
 
 本来、CI=Continuous Integrationの目的は、複数の開発ブランチが並行して走るプロジェクトにおいて、コンフリクトを解消しマージを省力化するための自動化です。
 マージされたレポジトリから、本番環境にデプロイできる状態のビルド成果物を生成するのがCD=Continous Deliveryとなります。
@@ -170,7 +169,8 @@ ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こ
 
 利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です
 
-(全体的に説明の追加要)
+TODO
+（全体的に説明の追加要）
 
 //footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
 
@@ -182,7 +182,7 @@ Spinnakerは、Continuous Deliveryに特化したツールであり、アプリ�
 
 NetflixがSpinnakerをオープンソース化したのは2015年です。最近のようですが、当時はマルチクラウドに対応したアプリケーションのデリバリといえば、IaaSに対応する仮想マシンイメージのビルドとデプロイ、あるいはPaaSへのデプロイを意味していました。そのため、従来のSpinnakerの機能は、EC2のようなIaaSや、Google App EngineのようなPaaSをターゲット（Cloud Provider）として、CIが生成するArtifactをデリバリするというものでした。
 
-その後Kubernetesが急速に発展し、Infrastructure as CodeであるマニフェストをアプリケーションのArtifactとして扱うという考え方が非常に有効であることが認識されるようになりました。そこで2018年になって、SpinnakerにもKubernetes V2 Provider(Manifest Based)が登場しました。これはSpinnakerにとっては、個々のアプリケーションに対するインフラストラクチャの定義を、Spinnakerの設定ではなくアプリケーションのArtifactとして取り扱うという意味で、大きな変換点となります。
+その後Kubernetesが急速に発展し、Infrastructure as CodeであるマニフェストをアプリケーションのArtifactとして扱うという考え方が非常に有効であることが認識されるようになりました。そこで2018年になって、SpinnakerにもKubernetes V2 Provider（Manifest Based）が登場しました。これはSpinnakerにとっては、個々のアプリケーションに対するインフラストラクチャの定義を、Spinnakerの設定ではなくアプリケーションのArtifactとして取り扱うという意味で、大きな変換点となります。
 
 showKs企画時点では、Kubernetes V2 Providerはまだbeta扱いでした。でもこの先進的なコンセプトを使わない手はないでしょう。@<b>{だってモテたいし}。というわけで、迷わずKubernetes V2 Providerを使うことに決定。
 
@@ -219,7 +219,7 @@ GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}�
 //footnote[flux][https://github.com/weaveworks/flux]
 
 GitOpsを採用することにより、多くのメリットがあります。
-1つはKubernetesのマニフェストをGitリポジトリに保管しておくことにより、Kubernetesの状態に関してSingle Source of Truthを実現することが可能です。
+1つはKubernetesのマニフェストをGitリポジトリに保管しておくことにより、Kubernetesの状態に関してSingle Source of Truthを実現することが可能な点です。
 システム全体の状態がマニフェストとしてGitリポジトリ上に管理されているため、障害時には再度宣言的に記述されたマニフェストを適用することにより迅速に回復させることが可能になります。
 また、Kubernetesへの変更は全てGitリポジトリを介して行われるという特性上、変更の監査履歴としても利用することが可能です。
 
@@ -228,11 +228,11 @@ GitOpsを採用することにより、多くのメリットがあります。
 そのため、開発者の生産性を損ねることなく、コンテナの軽量さを生かして生産性やアプリケーションのリリース頻度を高めることが可能です。
 
 
-===[column] 膨らむ構成
+===[column] 【コラム】膨らむ構成
 
 シンプルだなんて言ってたけど、だんだん雲行きが怪しくなってきましたね。この段階で、当初の計画よりも2倍くらい要素が増えてしまいました。アプリケーションだけならまだシンプルだと言えますが、それを上手く運用していくためのツールや手法がとにかく多い。 とはいえ、これらツールの支援無しにはクラウドネイティブな開発が出来ないのも事実。このあたりのツラミについては、第3章にて詳しく説明します。
 
-一方でこのCI/CDの仕組みを一度完成させると、Cloud Nativeの定義で紹介した下記のような利点を享受することができます。
+一方でこのCI/CDの仕組みを一度完成させると、クラウドネイティブの定義で紹介した下記のような利点を享受することができます。
 組織の開発力を向上させるためにも、プロジェクトを始める前にしっかりとしたCI/CD環境を整備するのは大切なことなのです。
 
  * 疎結合なシステム
@@ -243,7 +243,7 @@ GitOpsを採用することにより、多くのメリットがあります。
 
 ===[/column]
 
-===[column] 涙無しには語れないJenkins X裏話
+===[column] 【コラム】涙無しには語れないJenkins X裏話
 
 CI/CDツールとして真っ先に頭に浮かぶのはJenkins@<fn>{jenkins}という方も多いかもしれません。確かにJenkinsはとても便利です。そしてKubernetesと連動して動くJenkins X@<fn>{jenkinsx}というツールも最近では登場してきました。
 
@@ -284,15 +284,16 @@ stagingにpushされたコードは、Concourse CIでユニットテストが行
 //image[developer-experience][デベロッパーワークフロー][scale=0.8]{
 //}
 
+TODO
 !!!! ブランチ分けでやるのか、リポジトリ分けでやるのかの話も書く
 
 == 本番を想定するならば、少なくとも2面は環境必要だよね
 
 ディスカッションしている間に、こんな話も出てきました。『パイプラインをProductionとStagingに分けて作ってるけどさあ、環境自体はどうする･･･?』
 
-確かに僕らは今までProduction,Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるk8sのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、k8sクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
+確かに僕らは今までProduction・Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるKubernetesのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、Kubernetesクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
 
-k8sクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
+Kubernetesクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
 
 //image[separate-env][ProductionとStagingの分離][scale=0.6]{
 //}
@@ -307,15 +308,15 @@ k8sクラスタが分かれるということは、GitOps的にもリポジト�
 
 今回、参加者にはGitHubを使ったPull Request開発を体験してもらいますので、GitHubアカウントは必須になります。また、キャンバスに掲載したい情報も渡して貰いたいですね。つまり、以下のような項目の入力が必要なわけです。
 
- * ユーザー名(必須)
- * GitHubアカウント名(必須)
- * TwitterID (オプション)
- * コメント(オプション)
+ * ユーザー名（必須）
+ * GitHubアカウント名（必須）
+ * TwitterID （オプション）
+ * コメント（オプション）
 
 当初は、Google Formsを使ってさっくりと用意しようと考えていました。しかし、よくよく考えてみると以下のような制約があることに気づきます。
 
  * ユーザー名はKubernetesのリソース名に使われるため、ユニークでなくてはならない
- * KubernetesのServiceとしてもユーザー名が使われる。名前解決にも利用されるため、利用できる文字が限られる(例えばアンダースコアはNG)
+ * KubernetesのServiceとしてもユーザー名が使われる。名前解決にも利用されるため、利用できる文字が限られる（例えばアンダースコアはNG）
  * GitHubにもInvitationを送る必要があるため、ValidなGitHubアカウントでなくてはならない
 
 つまり、ちゃんとしたバリデーションが必要ということになります。ここまでのバリデーションは、Google Formsでやるのは難しそうです。
@@ -332,7 +333,7 @@ class Project < ApplicationRecord
   validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 }
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
-(略)
+（略）
 //}
 
 //footnote[showks-form][https://github.com/containerdaysjp/showks-form]
@@ -363,7 +364,7 @@ GitHubの操作は、GitHub APIを叩くGemであるOktokitを利用しました
         {organization: "containerdaysjp",
         team_id: 3013077})
     end
-(略)
+（略）
 //}
 
 Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンドを、Railsから実行するという形の実装となっています。
@@ -373,7 +374,7 @@ Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンド�
 //image[provisioned-resources][作成されたリソース][scale=0.6]{
 //}
 
-===[column] Pipeline as Code
+===[column] 【コラム】Pipeline as Code
 
 僕たちはこの仕組みのことを、Pipeline as Codeと呼ぶことにしました。showKsならではの仕組みで一般の開発に使える余地がどのくらいあるかは分かりませんが、たとえば組織内でリポジトリやCI/CDパイプラインを標準化して、プロジェクト開始時にこれらを一発でプロビジョニングする、といったことをしたい場合には有用な考え方かもしれません。
 
@@ -424,7 +425,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 
 //footnote[pr-canary][https://github.com/kubernetes/ingress-nginx/pull/3341]
 
-このingress-nginxの機能により、Ingressのannotationとして
+このingress-nginxの機能により、Ingressのannotationとして下記のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
 
 //listnum[ingress.yaml][カナリアリリース用Ingress定義の例][yaml]{
 apiVersion: extensions/v1beta1
@@ -441,8 +442,6 @@ metadata:
 （略）
 //}
 
-のように記述することで、同じhostnameとportを持つサービスへのトラフィックの一部（上記の例では20%）を転送するIngressが定義できるのです。
-
 意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
 
 //image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
@@ -450,7 +449,7 @@ metadata:
 
 
 
-===[column] カナリアリリース、そもそもリリースをどう考えるか
+===[column] 【コラム】カナリアリリース、そもそもリリースをどう考えるか
 
 カナリアリリースは、炭鉱夫が有害な一酸化炭素や有毒ガスを検知するためにカナリアを鳥かごに入れて連れていったことに由来すると言われています。
 カナリアは人間よりも有毒ガスなどに敏感なため、人間よりも早く検知することができるため、早く逃げることができるようになります。
@@ -472,7 +471,7 @@ metadata:
 
 プロジェクトをはじめたきっかけとして「クラウドネイティブなインフラを作って、参加者の人に面白さを伝える」という思いが僕たちにはありました。そのため、インフラの構想はどんどん膨らむ一方、アプリケーションの中身やその設計についてはあまり深く考えられていませんでした（正確に言うと、アプリケーションの実装を実際に行う人が少なかったとも言えます）。そして、あれこれ手を動かしながら試行錯誤を繰り返す中で、次第に以下のような形に収束していきました。
 
- * 参加者は1つの独立したサービスを持ち、それを自分で管理できる
+ * 参加者は1つの独立したサービスを持ち、それを自分で管理できる（マイクロサービスのプロジェクトオーナとなるイメージ）
  * 各マイクロサービスは参加者のアクション（showKs form）を起点として動的に払い出される
  * 各サービスは共通のエンドポイントを持ち、それをアグリゲーターによって集約して可観測な状態にする
  * アグリゲーターはKubernetesのAPIを使って後ろにいる各サービスたちを常に監視していて、サービスが増えたり減ったりしたときにはそれがリアルタイムで更新される
@@ -510,21 +509,21 @@ metadata:
 //footnote[showks-aggregator][https://github.com/containerdaysjp/showks-aggregator]
 
 //listnum[app.js][CanvasアプリのインスタンスをWatchで監視する部分][js]{
-function watchService(resourceVersion) {
-  console.log(`Start watching services from resourceVersion: ${resourceVersion}`);
-  let watch = new k8s.Watch(kc);
-  let req = watch.watch(
+function watchService（resourceVersion） {
+  console.log（`Start watching services from resourceVersion: ${resourceVersion}`）;
+  let watch = new k8s.Watch（kc）;
+  let req = watch.watch（
     k8sApiEndpoint,
     {
       labelSelector: 'class=showks-canvas',
       resourceVersion: resourceVersion
     },
-    (type, obj) => {
+    （type, obj） => {
       try {
-        if (type == 'ADDED') {
-          console.log('New instance was added');
-          addInstance(obj);
-(略)
+        if （type == 'ADDED'） {
+          console.log（'New instance was added'）;
+          addInstance（obj）;
+（略）
 //}
 
 == 運用無くして何がクラウドネイティブだ。 モニタリングツールを考えよう
@@ -584,7 +583,7 @@ Portal         マイクロサービスアプリケーションの一覧画面
   ** データベース
   ** ユーザーなどが投稿するファイル
   * 環境変数などの活用
-  ** 秘匿情報の取扱い(外部サービスのAPIキーやアプリケーションで利用するシークレットなど)
+  ** 秘匿情報の取扱い（外部サービスのAPIキーやアプリケーションで利用するシークレットなど）
   ** 接続先エンドポイントなどの情報
 
 これらの情報を徹底的にハードコードさせない。ローカルにストアしないようにさせることが、コンテナ化はもちろんですが、スケーラブルなアプリケーションを開発する上では必須です。
