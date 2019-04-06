@@ -290,9 +290,9 @@ stagingにpushされたコードは、Concourse CIでユニットテストが行
 
 ディスカッションしている間に、こんな話も出てきました。『パイプラインをProductionとStagingに分けて作ってるけどさあ、環境自体はどうする･･･?』
 
-確かに僕らは今までProduction,Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるk8sのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、k8sクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
+確かに僕らは今までProduction,Stagingを区別してコードを書いてきましたが、実際にアプリケーションを載せるKubernetesのほうは、特に何も考えていなかったのです。でも、本当にProductionに出すとすると、Kubernetesクラスタは分けるケースが多いのではないでしょうか。クラウドネイティブのショーケースを名乗るのであれば、やっぱりここも分けた方がいいかもしれません。
 
-k8sクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
+Kubernetesクラスタが分かれるということは、GitOps的にもリポジトリが分かれます@<fn>{showks-manifests-prod}@<fn>{showks-manifests-stg}。そして、それをデプロイするSpinnakerのパイプラインも分かれることになります。図にすると@<img>{separate-env}のようになるでしょうか。 やばい、どこまで構成大きくなるんだろう。
 
 //image[separate-env][ProductionとStagingの分離][scale=0.6]{
 //}
