@@ -207,7 +207,7 @@ SpinnakerのPipeline JSONはGitHub@<fn>{spinnaker-pipelines}からダウンロ�
 様々なツールがありますが、アプリケーション開発者はGitHub上のソースコードを更新することで開発を進めていきます。
 そんなバックグラウンドと非常に相性が良いと思うのがGitOpsです。ChatOpsのGit版ですね！
 
-GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです（https://www.weave.works/technologies/gitops/）。
+GitOpsはWeaveworksが提唱するContinious Deliveryを実現する手法の一つです。@<fn>{gitops-weaveworks}
 GitOpsではContinious DeliveryをGitリポジトリを介して行うことにより、全ての変更はPull-Requestをベースに行われていきます。
 GitOpsで登場するリポジトリは2種類存在します。一つはアプリケーションのソースコード用のリポジトリ、もう一つはKubernetesのマニフェスト用のリポジトリです。
 流れとしては、まずアプリケーション開発者はアプリケーションのリポジトリに対してPull-Requestを作成後、UnitTest・コンテナイメージのビルドなどのContinuous Integrationが行われます。
@@ -221,6 +221,7 @@ GitOpsではこのCIが行われた際に、マニフェスト用のリポジト
 GitOpsはあくまでも概念であり、マニフェストの更新や更新時のKubernetesクラスタへの適用といった実装は多岐に渡ります。
 GitOpsの実装としては、Jenkins X@<fn>{jenkinsx}やWeave Flux@<fn>{flux}などがありますが、今回はHelmを利用したマニフェスト生成とSpinnakerを利用しています。@<b>{だってモテたいし}。
 
+//footnote[gitops-weaveworks][https://www.weave.works/technologies/gitops/]
 //footnote[jenkinsx][https://github.com/jenkins-x]
 //footnote[flux][https://github.com/weaveworks/flux]
 
@@ -335,7 +336,8 @@ RoRを採用したことで、ActiveRecordの持つ強力なバリデータに�
 class Project < ApplicationRecord
   include ActiveModel::Validations
   validates_with GitHubUserValidator
-  validates :username, uniqueness: true, presence: true, format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
+  validates :username, uniqueness: true, presence: true,
+            format: { with: /\A[a-z0-9\-]+\z/}, length: { maximum: 30 }
   validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 }
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
