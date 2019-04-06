@@ -24,7 +24,7 @@ Kubernetesの特徴の一つとしてよく取り上げられるのが拡張性�
 
 こういった実装が本当に工数に見合うものになるかどうかはまだ分かりません。そこまでしてCRD化進めない方が効率がいいという可能性も十分にあり得ます。そのあたりの知見を貯めるためにも、次の回では是非挑戦してみたいと考えています。
 
-===[column] CustomResourceDefinitionとOperator
+===[column] 【コラム】CustomResourceDefinitionとOperator
 
 CustomResourceDefinitionの目的は、手動でやっていたオペレーションやミドルウェアの管理をプログラム化して拡張することです。
 このプログラムのことをCustom ControllerやOperatorと呼んだりしています。
@@ -88,7 +88,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
 //footnote[chaosengineering][http://principlesofchaos.org/]
 //footnote[chaosmonkey][https://github.com/Netflix/chaosmonkey]
 
-===[column] JKD参加者にshowKsよ！届け！！
+===[column] 【コラム】JKD参加者にshowKsよ！届け！！
 
 ここまでご紹介してきたように、様々な工夫と努力を経てshowKsは作り上げられました。
 しかし、どれだけ良いモノが出来上がったとしても、それをJKD参加者へ届けられなければ意味がありません。
@@ -117,7 +117,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
 
 ===[/column]
 
-===[column] 私たちのモチベーションって？
+===[column] 【コラム】私たちのモチベーションって？
 
 showKs企画のきっかけは第1章でもお伝えしましたが、showKsの参加メンバーは元々JKDのボランティアスタッフとして集まったメンバーが大半で、当然のことながら普段は別のお仕事を沢山抱えていたりします。
 
@@ -139,7 +139,7 @@ JKDに来てくださる皆さんに動いているものをやっぱり見せ�
 
 ===[/column]
 
-===[column] アポーペン、アレはいいものだ
+===[column] 【コラム】アポーペン、アレはいいものだ
 
 Canvasはお絵かきアプリですが、実は当初は使用できる色も少なく、さらに消しゴム機能などもありませんでした。
 @kojiha がもくもくと機能改善に取り組んではいましたが、JKDの開催直前の時期に大きな出来事がありました。
