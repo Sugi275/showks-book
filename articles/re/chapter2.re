@@ -16,16 +16,16 @@
 
 第1章でも述べたように、showKsでは@<b>{お持ち帰り}が大きなテーマのひとつでした。お絵描きアプリで遊んで、その仕組みを説明されただけでは、なかなか知識として定着しませんよね。僕たちが作った仕組みそのものを持ち帰ってもらい、皆さんの環境上でクラウドネイティブなCI/CDを実現してもらいたかったのです。
 
-だからといって、昔ながらの@<b>{構築手順書}には絶対にしたくなかったんです。だって@<b>{かっこ悪いもん}。じゃあどうするか？ コード化するに決まってるでしょう！ そう、Infrastructure as Code(IaC)をやれば、持ち帰りやすくなりますよね。
+だからといって、昔ながらの@<b>{構築手順書}には絶対にしたくなかったんです。だって@<b>{かっこ悪いもん}。じゃあどうするか？ コード化するに決まってるでしょう！ そう、Infrastructure as Code（IaC）をやれば、持ち帰りやすくなりますよね。
 
 === Terraform
 
-マネージドのKubernetesを使いたい！となったとき、第一の選択肢に上がるのがGoogle Kubernetes Engine(GKE)でしょう。今回のshowKsでも、GKEを利用しました。その他、アプリケーションで利用するファイルの置き場や静的IPなども必要となりますので、以下のサービスを利用しました。
+マネージドのKubernetesを使いたい！となったとき、第一の選択肢に上がるのがGoogle Kubernetes Engine（GKE）でしょう。今回のshowKsでも、GKEを利用しました。その他、アプリケーションで利用するファイルの置き場や静的IPなども必要となりますので、以下のサービスを利用しました。
 
  * Google Cloud Storage
  * Google Cloud DNS
  * Static External IP
- * Google Compute Engine(踏み台サーバー用)
+ * Google Compute Engine（踏み台サーバー用）
 
 マネージドサービスはとても便利ですし、皆さん結構GUIを使ってポチポチ構築されているのではないでしょうか。でも、GUIを使うのは手数がかかりますし、再現性の点においてもあまり好ましくありません。そこで、これらをプロビジョニングする仕組みとして、HashiCorpのTerraformを利用しました。
 
@@ -114,7 +114,7 @@ showKsでも、Helmを利用してマニフェストを生成することで再�
 //}
 
 TODO
-(helmの図解やもうちょっと細かい説明をここに入れたい)
+（helmの図解やもうちょっと細かい説明をここに入れたい）
 
 
 == CI/CD
@@ -129,7 +129,7 @@ CI/CDのパイプラインを経て生成される成果物、および中間成
 
 ちょっと待って。僕らがやろうとしているのは「クラウドネイティブな」CI/CDであり、なにも.warファイルをweblogicサーバーにデプロイしたいわけではありません。アプリケーションはコンテナとして動くことが前提ですし、デプロイ先のインフラはKubernetesが前提です。その場合、CI/CDパイプラインが生成するArtifactは何になるでしょう？
 
-一つの有力な候補は、Docker Imageです。Docker ImageをArtifactとするなら、CI/CDにおけるビルドタスクの一つとしてコンテナイメージのビルド(docker build)が実行されることになり、生成されたDocker Imageは何らかのイメージレジストリ（DockerHubなど）でバージョン管理することになります。これであれば、.warファイルをNexusで管理する、とかと大して違いませんね。
+一つの有力な候補は、Docker Imageです。Docker ImageをArtifactとするなら、CI/CDにおけるビルドタスクの一つとしてコンテナイメージのビルド（docker build）が実行されることになり、生成されたDocker Imageは何らかのイメージレジストリ（DockerHubなど）でバージョン管理することになります。これであれば、.warファイルをNexusで管理する、とかと大して違いませんね。
 
 ですが、それだけでしょうか？ArtifactがDocker Imageだけだとすると、Kubernetes上にはそれだけではデプロイできません。
 
@@ -170,7 +170,7 @@ ConcourseCIではCI PipelineをYAMLで定義することが可能なため、こ
 利用したPipeline YAMLはGitHub@<fn>{showks-concourse-pipeline}からダウンロード可能です
 
 TODO
-(全体的に説明の追加要)
+（全体的に説明の追加要）
 
 //footnote[showks-concourse-pipeline][https://github.com/containerdaysjp/showks-concourse-pipelines]
 
@@ -182,7 +182,7 @@ Spinnakerは、Continuous Deliveryに特化したツールであり、アプリ�
 
 NetflixがSpinnakerをオープンソース化したのは2015年です。最近のようですが、当時はマルチクラウドに対応したアプリケーションのデリバリといえば、IaaSに対応する仮想マシンイメージのビルドとデプロイ、あるいはPaaSへのデプロイを意味していました。そのため、従来のSpinnakerの機能は、EC2のようなIaaSや、Google App EngineのようなPaaSをターゲット（Cloud Provider）として、CIが生成するArtifactをデリバリするというものでした。
 
-その後Kubernetesが急速に発展し、Infrastructure as CodeであるマニフェストをアプリケーションのArtifactとして扱うという考え方が非常に有効であることが認識されるようになりました。そこで2018年になって、SpinnakerにもKubernetes V2 Provider(Manifest Based)が登場しました。これはSpinnakerにとっては、個々のアプリケーションに対するインフラストラクチャの定義を、Spinnakerの設定ではなくアプリケーションのArtifactとして取り扱うという意味で、大きな変換点となります。
+その後Kubernetesが急速に発展し、Infrastructure as CodeであるマニフェストをアプリケーションのArtifactとして扱うという考え方が非常に有効であることが認識されるようになりました。そこで2018年になって、SpinnakerにもKubernetes V2 Provider（Manifest Based）が登場しました。これはSpinnakerにとっては、個々のアプリケーションに対するインフラストラクチャの定義を、Spinnakerの設定ではなくアプリケーションのArtifactとして取り扱うという意味で、大きな変換点となります。
 
 showKs企画時点では、Kubernetes V2 Providerはまだbeta扱いでした。でもこの先進的なコンセプトを使わない手はないでしょう。@<b>{だってモテたいし}。というわけで、迷わずKubernetes V2 Providerを使うことに決定。
 
@@ -308,15 +308,15 @@ Kubernetesクラスタが分かれるということは、GitOps的にもリポ�
 
 今回、参加者にはGitHubを使ったPull Request開発を体験してもらいますので、GitHubアカウントは必須になります。また、キャンバスに掲載したい情報も渡して貰いたいですね。つまり、以下のような項目の入力が必要なわけです。
 
- * ユーザー名(必須)
- * GitHubアカウント名(必須)
- * TwitterID (オプション)
- * コメント(オプション)
+ * ユーザー名（必須）
+ * GitHubアカウント名（必須）
+ * TwitterID （オプション）
+ * コメント（オプション）
 
 当初は、Google Formsを使ってさっくりと用意しようと考えていました。しかし、よくよく考えてみると以下のような制約があることに気づきます。
 
  * ユーザー名はKubernetesのリソース名に使われるため、ユニークでなくてはならない
- * KubernetesのServiceとしてもユーザー名が使われる。名前解決にも利用されるため、利用できる文字が限られる(例えばアンダースコアはNG)
+ * KubernetesのServiceとしてもユーザー名が使われる。名前解決にも利用されるため、利用できる文字が限られる（例えばアンダースコアはNG）
  * GitHubにもInvitationを送る必要があるため、ValidなGitHubアカウントでなくてはならない
 
 つまり、ちゃんとしたバリデーションが必要ということになります。ここまでのバリデーションは、Google Formsでやるのは難しそうです。
@@ -333,7 +333,7 @@ class Project < ApplicationRecord
   validates :github_id, uniqueness: true, presence: true, length: { maximum: 30 }
   validates :twitter_id, format: { with: /\A[a-zA-Z0-9\_]+\z/}, length: { maximum: 15 }
   validates :comment, length: { maximum: 100 }
-(略)
+（略）
 //}
 
 //footnote[showks-form][https://github.com/containerdaysjp/showks-form]
@@ -364,7 +364,7 @@ GitHubの操作は、GitHub APIを叩くGemであるOktokitを利用しました
         {organization: "containerdaysjp",
         team_id: 3013077})
     end
-(略)
+（略）
 //}
 
 Concourseは標準のCLIであるflyコマンド、Spinnakerはspinコマンドを、Railsから実行するという形の実装となっています。
@@ -509,21 +509,21 @@ metadata:
 //footnote[showks-aggregator][https://github.com/containerdaysjp/showks-aggregator]
 
 //listnum[app.js][CanvasアプリのインスタンスをWatchで監視する部分][js]{
-function watchService(resourceVersion) {
-  console.log(`Start watching services from resourceVersion: ${resourceVersion}`);
-  let watch = new k8s.Watch(kc);
-  let req = watch.watch(
+function watchService（resourceVersion） {
+  console.log（`Start watching services from resourceVersion: ${resourceVersion}`）;
+  let watch = new k8s.Watch（kc）;
+  let req = watch.watch（
     k8sApiEndpoint,
     {
       labelSelector: 'class=showks-canvas',
       resourceVersion: resourceVersion
     },
-    (type, obj) => {
+    （type, obj） => {
       try {
-        if (type == 'ADDED') {
-          console.log('New instance was added');
-          addInstance(obj);
-(略)
+        if （type == 'ADDED'） {
+          console.log（'New instance was added'）;
+          addInstance（obj）;
+（略）
 //}
 
 == 運用無くして何がクラウドネイティブだ。 モニタリングツールを考えよう
@@ -583,7 +583,7 @@ Portal         マイクロサービスアプリケーションの一覧画面
   ** データベース
   ** ユーザーなどが投稿するファイル
   * 環境変数などの活用
-  ** 秘匿情報の取扱い(外部サービスのAPIキーやアプリケーションで利用するシークレットなど)
+  ** 秘匿情報の取扱い（外部サービスのAPIキーやアプリケーションで利用するシークレットなど）
   ** 接続先エンドポイントなどの情報
 
 これらの情報を徹底的にハードコードさせない。ローカルにストアしないようにさせることが、コンテナ化はもちろんですが、スケーラブルなアプリケーションを開発する上では必須です。
