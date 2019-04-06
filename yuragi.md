@@ -2,3 +2,4 @@
 
 * クラウドネイティブ / Cloud Native
 * マネージド / Managed
+* かっこ() （）
