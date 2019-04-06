@@ -462,7 +462,7 @@ metadata:
 
 通信を集約する「aggregator」には、全部のマイクロサービスを把握するという重要な役割があります。各マイクロサービスは、デプロイされた時点で親である「aggregator」に自分の情報を通知する、普通だったらこんな風に作りますよね。
 
-//image[aggregator1][普通の作り方][scale=0.6]{
+//image[aggregator1][普通の作り方][scale=0.4]{
 //}
 
 でもアプリチームは考えました。
@@ -478,12 +478,32 @@ metadata:
 
 という仕様に落ち着いたのです。
 
-//image[aggregator2][Kubernetes APIでCanvasインスタンスを監視][scale=0.6]{
+//image[aggregator2][Kubernetes APIでCanvasインスタンスを監視][scale=0.4]{
 //}
 
-使ったのはKubernetes公式サポートのJavaScriptライブラリ。非常によくできたライブラリで、Kuberenetes APIのほぼ全機能をカバーしているようです。ただし使い方はソースコードに書いてあるからね、JavaScriptだし大丈夫だよね、のまさにフルサポート（泣。こうして、人知れずAPI呼び出しのデバッグに明け暮れる、というより暮れて明ける夜が続いたのでした。
+使ったのはKubernetes公式サポートのJavaScriptライブラリ。非常によくできたライブラリで、Kubernetes APIのほぼ全機能をカバーしているようです。ただし使い方はソースコードに書いてあるからね、JavaScriptだし大丈夫だよね、のまさにフルサポート（泣。こうして、人知れずAPI呼び出しのデバッグに明け暮れる、というより暮れて明ける夜が続いたのでした。
 
 真面目な話、「Watch」を使ったインスタンスのデプロイ状態の監視とアトリビュートの取得処理は、Kubernetes APIを使った自動化の参考にしていただけることと思います。showks-aggregatorのソースコードもお見逃しなく。
+
+//footnote[showks-aggregator][https://github.com/containerdaysjp/showks-aggregator]
+
+//listnum[app.js][CanvasアプリのインスタンスをWatchで監視する部分][js]{
+function watchService(resourceVersion) {
+  console.log(`Start watching services from resourceVersion: ${resourceVersion}`);
+  let watch = new k8s.Watch(kc);
+  let req = watch.watch(
+    k8sApiEndpoint,
+    {
+      labelSelector: 'class=showks-canvas',
+      resourceVersion: resourceVersion
+    },
+    (type, obj) => {
+      try {
+        if (type == 'ADDED') {
+          console.log('New instance was added');
+          addInstance(obj);
+(略)
+//}
 
 == 運用無くして何がクラウドネイティブだ。 モニタリングツールを考えよう
 
