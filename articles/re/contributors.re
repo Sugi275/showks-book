@@ -4,7 +4,11 @@
 自己紹介
 
 ==== @amsy810
-自己紹介
+Kubernetes大好き٩(๑´0`๑)۶ 株式会社サイバーエージェント所属。
+Japan Container Daysの後継カンファレンス『Cloud Native Days Tokyo』のCo-Chairをペンギンさんと共に頑張っている。
+他、Cloud Native Meetup Tokyo、Kubernetes Meetup TokyoのOrganizerとしてもわいわい（仲間に入れたそうにそちらを見ている）。
+showKsではKubernetes・GitOps・ConcourseCI周りを担当。
+Kubernetes完全ガイドの執筆で疲れたものの、なぜか3冊目の本書を書くことに。
 
 ==== @jyoshise
 Hewlett Packard Enterpriseの髪の長いおじさんとして知られていたが、JKD v18.12直後に髪を切ったので、今は髪の長くないおじさん。
