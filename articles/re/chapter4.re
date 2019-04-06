@@ -24,6 +24,15 @@ Kubernetesの特徴の一つとしてよく取り上げられるのが拡張性�
 
 こういった実装が本当に工数に見合うものになるかどうかはまだ分かりません。そこまでしてCRD化進めない方が効率がいいという可能性も十分にあり得ます。そのあたりの知見を貯めるためにも、次の回では是非挑戦してみたいと考えています。
 
+===[column] CustomResourceDefinitionとOperator
+
+CustomResourceDefinitionの目的は、手動でやっていたオペレーションやミドルウェアの管理をプログラム化して拡張することです。
+このプログラムのことをCustom ControllerやOperatorと呼んだりしています。
+例えばMySQLの管理やスケールを自動化してくれるMySQL Operatorを使ってMySQLを構築した場合には、Database as a Service on Kubernetesのように捉えることも可能ですね。
+こういった背景から、KubernetesはクラウドのOSになると言われたり、小さなGCPやAWSのように見えるところもあります。
+
+===[/column]
+
 == Service MeshとIstio
 
 showKsを作っていく中で、いろんなところで「マイクロサービス間の通信制御」「外部からのアクセス制御」といった問題に遭遇しました。
