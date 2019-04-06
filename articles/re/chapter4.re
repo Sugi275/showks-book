@@ -14,7 +14,7 @@ showKsそのものがContinuousなProjectとして、改良・進化を目指す
 
 == CustomResourceDefinitionの活用
 
-Kubernetesの特徴の一つとしてよく取り上げられるのが拡張性です。PodやDeploymentのような標準APIだけではなく、自らCustom Resourceを定義し、Kubernetes上で扱うことが可能なんです。カスタムリソースを定義する機能のことをCustomResourceDefinition(CRD)といいます。
+Kubernetesの特徴の一つとしてよく取り上げられるのが拡張性です。PodやDeploymentのような標準APIだけではなく、自らCustom Resourceを定義し、Kubernetes上で扱うことが可能なんです。カスタムリソースを定義する機能のことをCustomResourceDefinition（CRD）といいます。
 
 今後、よりKubernetesネイティブな開発をしていくにあたっては、このCRDをいかに活用していくかがポイントではないかと考えています。
 
@@ -23,6 +23,15 @@ Kubernetesの特徴の一つとしてよく取り上げられるのが拡張性�
 例えばここにCRDを活用すると、リソースの状態管理はKubernetes側に委ねることができるようになります。"ShowksUser"リソースを作成すると、それが自動で"GitHub", "Concourse", "Spinnaker"というリソースを作成し、それらリソースは各サービスのAPIを叩きに行って実体を生成すると。削除するときは、Kubernetesでこれらのリソースを削除すれば実体も消える･･･と。この仕組みならば、ユーザーのプロビジョニングも第2章で解説したGitOpsの仕組みに載せることができそうですね。
 
 こういった実装が本当に工数に見合うものになるかどうかはまだ分かりません。そこまでしてCRD化進めない方が効率がいいという可能性も十分にあり得ます。そのあたりの知見を貯めるためにも、次の回では是非挑戦してみたいと考えています。
+
+===[column] 【コラム】CustomResourceDefinitionとOperator
+
+CustomResourceDefinitionの目的は、手動でやっていたオペレーションやミドルウェアの管理をプログラム化して拡張することです。
+このプログラムのことをCustom ControllerやOperatorと呼んだりしています。
+例えばMySQLの管理やスケールを自動化してくれるMySQL Operatorを使ってMySQLを構築した場合には、Database as a Service on Kubernetesのように捉えることも可能ですね。
+こういった背景から、KubernetesはクラウドのOSになると言われたり、小さなGCPやAWSのように見えるところもあります。
+
+===[/column]
 
 == Service MeshとIstio
 
@@ -70,7 +79,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
 
 幸いなことに特に大きな障害は起こることなくshowKsをリリースすることができましたが、次回も同じように行くとは限りません。ですので次回はしっかりと通知する仕組みを組み込みたいと考えています。
 
-クラウドネイティブの定義の一つに復元力というものがありましたよね？showKsはクラウドネイティブなアプリケーションですから、ちょっとやそっとの障害で動かなくなってしまっては困ります。その為には意図的にサーバーやコンテナを落としてみて、システムにどのような影響があるのか？SPOF(Single Point Of Failure)になっている部分は無いか？を常に把握しておき、意図しない本物の障害が起きたとしても被害を最小限にするようにしたいものです。このような考え方はChaos Engineering@<fn>{chaosengineering}と言われています。
+クラウドネイティブの定義の一つに復元力というものがありましたよね？showKsはクラウドネイティブなアプリケーションですから、ちょっとやそっとの障害で動かなくなってしまっては困ります。その為には意図的にサーバーやコンテナを落としてみて、システムにどのような影響があるのか？SPOF（Single Point Of Failure）になっている部分は無いか？を常に把握しておき、意図しない本物の障害が起きたとしても被害を最小限にするようにしたいものです。このような考え方はChaos Engineering@<fn>{chaosengineering}と言われています。
 
 本当はみなさんにデプロイしてもらったアプリケーションをランダムに落としたりしようかみたいな話も出てきましたが、結局はそこまで実現しませんでした。
 
@@ -79,7 +88,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
 //footnote[chaosengineering][http://principlesofchaos.org/]
 //footnote[chaosmonkey][https://github.com/Netflix/chaosmonkey]
 
-===[column] JKD参加者にshowKsよ！届け！！
+===[column] 【コラム】JKD参加者にshowKsよ！届け！！
 
 ここまでご紹介してきたように、様々な工夫と努力を経てshowKsは作り上げられました。
 しかし、どれだけ良いモノが出来上がったとしても、それをJKD参加者へ届けられなければ意味がありません。
@@ -94,7 +103,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
  * 前夜祭でのLightning Talk（チラ見せ）
  ** JKDの前日に開催された前夜祭イベントで、showKsのPRをするLTを行いました。
  * オープニングでのPR
- ** JKDのオープニングの中で、オーガナイザーである鈴木さん (@szkn27) からshowKsをPRして頂きました。
+ ** JKDのオープニングの中で、オーガナイザーである鈴木さん （@szkn27） からshowKsをPRして頂きました。
  * showKsブースでのPR
  ** ブース壁面に、ランディングページへのQRコードを含む様々なA3ポスターを張り出しました。
  * 打ち上げ会場でも・・・
@@ -108,7 +117,7 @@ KubernetesにServerless Computingの考え方を持ち込むことができるKn
 
 ===[/column]
 
-===[column] 私たちのモチベーションって？
+===[column] 【コラム】私たちのモチベーションって？
 
 showKs企画のきっかけは第1章でもお伝えしましたが、showKsの参加メンバーは元々JKDのボランティアスタッフとして集まったメンバーが大半で、当然のことながら普段は別のお仕事を沢山抱えていたりします。
 
@@ -130,7 +139,8 @@ JKDに来てくださる皆さんに動いているものをやっぱり見せ�
 
 ===[/column]
 
-===[column] 実際のところ、クラウドネイティブはモテるのか
+<<<<<<< HEAD
+===[column] 【コラム】実際のところ、クラウドネイティブはモテるのか
 
 こいつらモテたいモテたい言ってるけど、実際のところクラウドネイティブでモテるの？と思うモテたいあなた。
 
@@ -146,7 +156,8 @@ Kuberntesは近いうちに幻滅期を迎えるとか、技術の栄枯盛衰�
 
 ===[/column]
 
-===[column] アポーペン、アレはいいものだ
+===[column] 【コラム】アポーペン、アレはいいものだ
+>>>>>>> master
 
 Canvasはお絵かきアプリですが、実は当初は使用できる色も少なく、さらに消しゴム機能などもありませんでした。
 @kojiha がもくもくと機能改善に取り組んではいましたが、JKDの開催直前の時期に大きな出来事がありました。
