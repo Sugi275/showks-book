@@ -8,6 +8,7 @@ articles/*.html
 articles/*.md
 articles/*.xml
 articles/*.txt
+!articles/images/*.pdf
 
 
 .DS_Store

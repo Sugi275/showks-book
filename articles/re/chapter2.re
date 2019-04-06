@@ -424,7 +424,7 @@ Istioでは特定のCookieが付与されたリクエストだけを新しいバ
 
 といったものでした。@<img>{canary1}はこれを議論していた時の落書きです。なかなか複雑ですよね・・・
 
-//image[canary1][やりたかったカナリアリリース][scale=0.6]{
+//image[canary1][やりたかったカナリアリリース][scale=0.8]{
 //}
 
 ところが現状のSpinnaker Kubernetes V2 Providerでは、クラスタをまたがる形でArtifact（つまりManifest）を引き継げないのです。
@@ -452,7 +452,7 @@ metadata:
 
 意図していた、「カナリアはStagingクラスタ、正式リリースはProductionクラスタ」ということはできなくなりますが、まあこれはこれでありでしょうということで、@<img>{canary2}のような形になりました。
 
-//image[canary2][ingress-nginxによるカナリアリリース][scale=0.6]{
+//image[canary2][ingress-nginxによるカナリアリリース][scale=0.8]{
 //}
 
 
@@ -491,7 +491,7 @@ metadata:
 
 通信を集約する「aggregator」には、全部のマイクロサービスを把握するという重要な役割があります。各マイクロサービスは、デプロイされた時点で親である「aggregator」に自分の情報を通知する、普通だったらこんな風に作りますよね。
 
-//image[aggregator1][普通の作り方][scale=0.4]{
+//image[aggregator1][普通の作り方][scale=0.5]{
 //}
 
 でもアプリチームは考えました。
@@ -507,7 +507,7 @@ metadata:
 
 という仕様に落ち着いたのです。
 
-//image[aggregator2][Kubernetes APIでCanvasインスタンスを監視][scale=0.4]{
+//image[aggregator2][Kubernetes APIでCanvasインスタンスを監視][scale=0.5]{
 //}
 
 使ったのはKubernetes公式サポートのJavaScriptライブラリ。非常によくできたライブラリで、Kubernetes APIのほぼ全機能をカバーしているようです。ただし使い方はソースコードに書いてあるからね、JavaScriptだし大丈夫だよね、のまさにフルサポート（泣。こうして、人知れずAPI呼び出しのデバッグに明け暮れる、というより暮れて明ける夜が続いたのでした。
